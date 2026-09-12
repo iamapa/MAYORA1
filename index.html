@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>MAYORA - Manajemen Apartemen</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background: #f0f4fa; padding: 6px; min-height: 100vh; }
+        .container { max-width: 480px; margin: 0 auto; }
+
+        .header {
+            background: white; padding: 8px 12px; border-radius: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-bottom: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .brand h1 { font-size: 17px; font-weight: 800; color: #1a2634; }
+        .brand h1 span { color: #d4a373; }
+        .brand-sub { font-size: 8px; color: #8a9bb0; }
+
+        .status-dot {
+            display: inline-block; width: 6px; height: 6px;
+            border-radius: 50%; background: #27ae60; margin-right: 3px;
+        }
+        .status-dot.saving { background: #f39c12; }
+        .status-dot.error { background: #e74c3c; }
+
+        .btn-reset {
+            background: #e74c3c; border: none; color: white; font-weight: 600;
+            padding: 4px 10px; border-radius: 30px; font-size: 9px; cursor: pointer;
+        }
+
+        .units {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 8px;
+        }
+        .unit-card {
+            background: white; padding: 8px 5px; border-radius: 10px; text-align: left;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02); cursor: pointer; border: 2px solid transparent;
+        }
+        .unit-card.active { border-color: #d4a373; background: #fdfaf7; }
+        .unit-card .unit-label {
+            font-size: 12px; font-weight: 700; color: #1a2634;
+            text-align: center; margin-bottom: 4px;
+        }
+        .unit-card .row {
+            display: flex; justify-content: space-between;
+            font-size: 8px; margin-bottom: 1px;
+        }
+        .unit-card .row .lbl { color: #8a9bb0; }
+        .unit-card .row .val { font-weight: 600; color: #1a2634; }
+        .unit-card .row .val.green { color: #27ae60; }
+        .unit-card .row .val.red { color: #e74c3c; }
+        .unit-card .row .val.orange { color: #e67e22; }
+        .unit-card .row.big {
+            font-size: 10px; margin-top: 3px; padding-top: 3px;
+            border-top: 1px dashed #dce3ed;
+        }
+        .unit-card .row.big .val { font-size: 11px; }
+
+        .recap-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px;
+        }
+        .recap-item {
+            background: white; padding: 6px 8px; border-radius: 8px; cursor: pointer;
+        }
+        .recap-item .label { font-size: 8px; color: #8a9bb0; font-weight: 500; }
+        .recap-item .value { font-size: 14px; font-weight: 700; color: #1a2634; }
+        .recap-item .value.green { color: #27ae60; }
+        .recap-item .value.yellow { color: #f39c12; }
+        .recap-item .value.red { color: #e74c3c; }
+        .recap-item.full { grid-column: 1 / -1; }
+
+        .form-section {
+            background: white; padding: 10px; border-radius: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03); margin-bottom: 8px;
+        }
+        .form-tabs {
+            display: flex; gap: 4px; margin-bottom: 6px;
+        }
+        .form-tabs button {
+            flex: 1; padding: 4px 0; border: none; border-radius: 30px;
+            font-weight: 600; font-size: 10px; cursor: pointer;
+            background: #f0f4fa; color: #5e6f8d;
+        }
+        .form-tabs button.active { background: #1a2634; color: white; }
+        .form-row {
+            display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px;
+        }
+        .form-row .field {
+            flex: 1; min-width: 60px;
+        }
+        .form-row .field label {
+            display: block; font-size: 8px; font-weight: 600; color: #5e6f8d; margin-bottom: 1px;
+        }
+        .form-row .field input,
+        .form-row .field select {
+            width: 100%; padding: 5px 6px; border: 1px solid #dce3ed;
+            border-radius: 6px; font-size: 11px; background: #fafcff;
+        }
+        .form-row .field input:focus,
+        .form-row .field select:focus {
+            outline: none; border-color: #d4a373;
+        }
+        .btn-add {
+            width: 100%; border: none; color: white; font-weight: 700;
+            padding: 7px 0; border-radius: 30px; font-size: 12px; cursor: pointer;
+        }
+        .btn-add.income-btn { background: #27ae60; }
+        .btn-add.expense-btn { background: #e67e22; }
+        .cleaning-hint {
+            font-size: 7px; color: #8a9bb0; text-align: right; padding: 1px 2px 0 0;
+        }
+        .conflict-notice {
+            background: #e74c3c22; color: #c0392b; padding: 3px 6px;
+            border-radius: 4px; font-size: 9px; margin-top: 3px; display: none;
+        }
+        .conflict-notice.show { display: block; }
+
+        .schedule-section {
+            background: white; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+            padding: 6px 3px; margin-bottom: 8px; overflow-x: auto;
+        }
+        .schedule-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 2px 4px; flex-wrap: wrap; gap: 3px;
+        }
+        .schedule-title {
+            font-size: 11px; font-weight: 700; color: #1a2634;
+        }
+        .schedule-title small {
+            font-weight: 400; font-size: 9px; color: #8a9bb0;
+        }
+        .schedule-nav button {
+            background: #f0f4fa; border: none; border-radius: 30px;
+            padding: 2px 8px; font-size: 10px; font-weight: 600;
+            color: #5e6f8d; cursor: pointer;
+        }
+        .schedule-table-wrap { overflow-x: auto; }
+        .schedule-table {
+            width: 100%; border-collapse: collapse; font-size: 8px; min-width: 420px;
+        }
+        .schedule-table th {
+            background: #f0f4fa; color: #1f2a3a; font-weight: 600;
+            padding: 3px 2px; text-align: center; border: 1px solid #dce3ed; font-size: 7px;
+        }
+        .schedule-table th .tgl {
+            font-weight: 400; font-size: 6px; color: #8a9bb0; display: block;
+        }
+        .schedule-table td {
+            padding: 3px 2px; text-align: center; border: 1px solid #dce3ed;
+            font-size: 7px; min-width: 30px; cursor: pointer;
+        }
+        .schedule-table .time-col {
+            font-weight: 600; color: #5e6f8d; background: #f8fafc;
+            min-width: 32px; font-size: 6px; cursor: default;
+        }
+        .schedule-table .booked {
+            background: #e74c3c22; color: #c0392b; font-weight: 600;
+        }
+        .schedule-table .booked .nama {
+            font-size: 6px; font-weight: 700; display: block; line-height: 1.1;
+        }
+        .schedule-table .booked .harga {
+            font-size: 5px; display: block; color: #e67e22; line-height: 1.1;
+        }
+        .schedule-table .available {
+            background: #27ae6022; color: #1e7a4a;
+        }
+        .schedule-table .available .empty-text {
+            font-size: 5px; color: #8a9bb0;
+        }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4); display: flex; align-items: center;
+            justify-content: center; z-index: 999; padding: 16px;
+        }
+        .modal-box {
+            background: white; border-radius: 14px; padding: 16px 14px;
+            max-width: 380px; width: 100%; box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+        .modal-box h3 { font-size: 15px; color: #1a2634; margin-bottom: 10px; }
+        .modal-box .field { margin-bottom: 8px; }
+        .modal-box .field label {
+            display: block; font-size: 9px; font-weight: 600; color: #5e6f8d; margin-bottom: 2px;
+        }
+        .modal-box .field input,
+        .modal-box .field select {
+            width: 100%; padding: 6px 8px; border: 1px solid #dce3ed;
+            border-radius: 8px; font-size: 12px;
+        }
+        .modal-box .field input:focus,
+        .modal-box .field select:focus {
+            outline: none; border-color: #d4a373;
+        }
+        .modal-box .detail-row {
+            display: flex; justify-content: space-between; padding: 4px 0;
+            border-bottom: 1px solid #f0f4fa; font-size: 11px;
+        }
+        .modal-box .detail-row .label { color: #8a9bb0; }
+        .modal-box .detail-row .value { font-weight: 600; color: #1a2634; }
+        .modal-actions {
+            display: flex; gap: 6px; margin-top: 10px;
+        }
+        .modal-actions button {
+            flex: 1; padding: 6px 0; border: none; border-radius: 30px;
+            font-weight: 600; font-size: 12px; cursor: pointer;
+        }
+        .modal-actions .btn-save { background: #27ae60; color: white; }
+        .modal-actions .btn-cancel { background: #f0f4fa; color: #5e6f8d; }
+        .modal-actions .btn-delete { background: #e74c3c; color: white; flex: 0.4; }
+
+        .history-section {
+            background: white; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+            padding: 6px 3px; overflow-x: auto;
+        }
+        .history-title {
+            font-size: 11px; font-weight: 700; color: #1a2634; padding: 0 2px 4px;
+        }
+        .history-table {
+            width: 100%; border-collapse: collapse; font-size: 8px; min-width: 420px;
+        }
+        .history-table th {
+            background: #f0f4fa; color: #1f2a3a; font-weight: 600;
+            padding: 4px 3px; text-align: left; border-bottom: 2px solid #dce3ed; font-size: 7px;
+        }
+        .history-table td {
+            padding: 4px 3px; border-bottom: 1px solid #eaeef5; vertical-align: middle; font-size: 7px;
+        }
+        .history-table .clickable { cursor: pointer; }
+        .history-table .clickable:active { background: #f0f4fa; }
+        .badge {
+            padding: 1px 5px; border-radius: 30px; font-size: 6px; font-weight: 600; display: inline-block;
+        }
+        .badge.income { background: #27ae6022; color: #1e7a4a; }
+        .badge.expense { background: #e67e2222; color: #b85e1a; }
+        .badge.unit { background: #d4a37322; color: #7f5a3a; }
+        .btn-del {
+            background: transparent; border: none; color: #b0bccf; cursor: pointer; font-size: 11px;
+        }
+        .empty-state {
+            text-align: center; color: #9aabbf; padding: 10px 0; font-size: 9px;
+        }
+        .footer {
+            text-align: center; color: #8a9bb0; font-size: 8px; margin-top: 6px;
+        }
+
+        .sync-info {
+            font-size: 7px; color: #8a9bb0; text-align: center;
+            margin-top: 4px; padding: 2px;
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+    <div class="header">
+        <div class="brand">
+            <h1>MAYORA</h1>
+            <div class="brand-sub">
+                <span class="status-dot" :class="syncStatus"></span>
+                {{ syncText }}
+            </div>
+        </div>
+        <button class="btn-reset" @click="resetAll">↺ Reset</button>
+    </div>
+
+    <div class="units">
+        <div class="unit-card" v-for="u in ['19','21','29']" :key="u"
+             :class="{ active: selectedUnit === u }" @click="selectedUnit = u">
+            <div class="unit-label">Unit {{ u }}</div>
+            <div class="row">
+                <span class="lbl">Kotor</span>
+                <span class="val">{{ formatShort(units[u].pendapatan) }}</span>
+            </div>
+            <div class="row">
+                <span class="lbl">Keluar</span>
+                <span class="val orange">{{ formatShort(expensePerUnit(u)) }}</span>
+            </div>
+            <div class="row big">
+                <span class="lbl">Bersih</span>
+                <span class="val" :class="bersihPerUnit(u) >= 0 && units[u].pendapatan >= units[u].modal ? 'green' : 'red'">
+                    {{ formatShort(bersihPerUnit(u)) }}
+                </span>
+            </div>
+            <div class="row">
+                <span class="lbl" style="font-size:7px;">Modal</span>
+                <span class="val" style="font-size:7px;">{{ formatShort(units[u].modal) }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="recap-grid">
+        <div class="recap-item">
+            <div class="label">Pendapatan Kotor</div>
+            <div class="value">{{ formatRupiah(totalKotor) }}</div>
+        </div>
+        <div class="recap-item" @click="lihatPengeluaran">
+            <div class="label">Total Pengeluaran</div>
+            <div class="value" style="color:#e67e22;">{{ formatRupiah(totalPengeluaran) }}</div>
+        </div>
+        <div class="recap-item">
+            <div class="label">Pendapatan Bersih</div>
+            <div class="value" :class="totalBersih >= 0 ? 'green' : 'red'">
+                {{ formatRupiah(totalBersih) }}
+            </div>
+        </div>
+        <div class="recap-item">
+            <div class="label">Status Total</div>
+            <div class="value" :class="statusWarna(totalKotor, 10100000)">
+                {{ formatRupiah(totalKotor) }}
+                <div style="font-size:7px;font-weight:400;color:#8a9bb0;">target 10.100.000</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <div class="form-tabs">
+            <button :class="{ active: form.jenis === 'income' }" @click="form.jenis = 'income'">💰 Pemasukan</button>
+            <button :class="{ active: form.jenis === 'expense' }" @click="form.jenis = 'expense'">📤 Pengeluaran</button>
+        </div>
+
+        <div v-if="form.jenis === 'income'">
+            <div class="form-row">
+                <div class="field">
+                    <label>Unit</label>
+                    <select v-model="form.unit">
+                        <option value="19">19</option>
+                        <option value="21">21</option>
+                        <option value="29">29</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Nominal (contoh: 350)</label>
+                    <input v-model.number="form.nominal" type="number" placeholder="350" />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="field">
+                    <label>Nama Penyewa</label>
+                    <input v-model="form.nama" placeholder="Nama" />
+                </div>
+                <div class="field">
+                    <label>Durasi (jam)</label>
+                    <input v-model.number="form.durasi" type="number" placeholder="1" />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="field" style="flex:2;">
+                    <label>Check-in</label>
+                    <input v-model="form.checkin" type="datetime-local" />
+                </div>
+                <div class="field" style="flex:1;display:flex;align-items:end;justify-content:flex-end;">
+                    <div class="cleaning-hint">⏱ +1 jam</div>
+                </div>
+            </div>
+            <div class="conflict-notice" :class="{ show: conflictDetected }">
+                ⚠️ JAM INI SUDAH TERBOOKING!
+            </div>
+            <button class="btn-add income-btn" @click="tambahPemasukan">+ Tambah</button>
+        </div>
+
+        <div v-else>
+            <div class="form-row">
+                <div class="field">
+                    <label>Unit</label>
+                    <select v-model="form.unit">
+                        <option value="19">19</option>
+                        <option value="21">21</option>
+                        <option value="29">29</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Nominal (contoh: 350)</label>
+                    <input v-model.number="form.nominal" type="number" placeholder="350" />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="field">
+                    <label>Nama Peminjam</label>
+                    <input v-model="form.nama" placeholder="Nama" />
+                </div>
+                <div class="field">
+                    <label>Kegunaan</label>
+                    <input v-model="form.kegunaan" placeholder="Untuk apa?" />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="field">
+                    <label>Tanggal</label>
+                    <input v-model="form.checkin" type="datetime-local" />
+                </div>
+            </div>
+            <button class="btn-add expense-btn" @click="tambahPengeluaran">+ Tambah</button>
+        </div>
+    </div>
+
+    <div class="schedule-section">
+        <div class="schedule-header">
+            <div class="schedule-title">
+                📅 Unit {{ selectedUnit }}
+                <small>{{ getBulanTahun() }}</small>
+            </div>
+            <div class="schedule-nav">
+                <button @click="prevMonth">◀️</button>
+                <button @click="nextMonth">▶️</button>
+            </div>
+        </div>
+        <div class="schedule-table-wrap">
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th style="min-width:30px;">Jam</th>
+                        <th v-for="day in daysInMonth" :key="day.tanggal">
+                            {{ day.nama }}
+                            <span class="tgl">{{ day.tanggal }}</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="jam in hours" :key="jam">
+                        <td class="time-col">{{ jam }}</td>
+                        <td v-for="day in daysInMonth" :key="day.tanggal" 
+                            :class="getSlotClass(selectedUnit, day, jam)"
+                            @click="openEditModal(selectedUnit, day, jam)">
+                            <span v-if="getSlotData(selectedUnit, day, jam)">
+                                <span class="nama">{{ getSlotData(selectedUnit, day, jam).nama }}</span>
+                                <span class="harga">{{ formatRupiah(getSlotData(selectedUnit, day, jam).harga) }}</span>
+                            </span>
+                            <span v-else class="empty-text">—</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="history-section">
+        <div class="history-title">📋 Riwayat</div>
+        <div class="history-table-wrap">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Unit</th>
+                        <th>Jenis</th>
+                        <th>Nama</th>
+                        <th>Nominal</th>
+                        <th>Durasi</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(t, idx) in transaksi" :key="idx" class="clickable" @click="openEditTransaksi(idx)">
+                        <td><span class="badge unit">U{{ t.unit }}</span></td>
+                        <td><span class="badge" :class="t.jenis">{{ t.jenis === 'income' ? '💰' : '📤' }}</span></td>
+                        <td>{{ t.nama || '-' }}</td>
+                        <td>{{ formatRupiah(t.nominal) }}</td>
+                        <td>{{ t.durasi || '-' }}j</td>
+                        <td>{{ t.checkin ? formatDate(t.checkin) : '-' }}</td>
+                        <td>{{ t.checkout ? formatDate(t.checkout) : '-' }}</td>
+                        <td><button class="btn-del" @click.stop="hapusTransaksi(idx)">✕</button></td>
+                    </tr>
+                    <tr v-if="!transaksi.length">
+                        <td colspan="8" class="empty-state">Belum ada transaksi</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer">MAYORA · cloud sync aktif</div>
+
+    <!-- EDIT MODAL -->
+    <div class="modal-overlay" v-if="editModal.show">
+        <div class="modal-box">
+            <h3>✏️ Edit</h3>
+            <div class="field">
+                <label>Unit</label>
+                <select v-model="editModal.unit">
+                    <option value="19">19</option>
+                    <option value="21">21</option>
+                    <option value="29">29</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Nama</label>
+                <input v-model="editModal.nama" />
+            </div>
+            <div class="field">
+                <label>Harga (contoh: 350 = 350.000)</label>
+                <input v-model.number="editModal.harga" type="number" />
+            </div>
+            <div class="field" v-if="editModal.jenis !== 'expense'">
+                <label>Durasi (jam)</label>
+                <input v-model.number="editModal.durasi" type="number" />
+            </div>
+            <div class="field">
+                <label>Tanggal</label>
+                <input v-model="editModal.checkin" type="datetime-local" />
+            </div>
+            <div class="field" v-if="editModal.jenis === 'expense'">
+                <label>Kegunaan</label>
+                <input v-model="editModal.kegunaan" placeholder="Untuk apa?" />
+            </div>
+            <div style="font-size:9px;color:#8a9bb0;margin-bottom:6px;" v-if="editModal.jenis !== 'expense'">
+                ⏱ Check-out otomatis +1 jam cleaning
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" @click="editModal.show = false">Batal</button>
+                <button class="btn-save" @click="saveEdit">Simpan</button>
+                <button class="btn-delete" @click="deleteEdit">🗑</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DETAIL PENGELUARAN MODAL -->
+    <div class="modal-overlay" v-if="detailModal.show">
+        <div class="modal-box">
+            <h3>📤 Detail Pengeluaran</h3>
+            <div class="detail-row">
+                <span class="label">Unit</span>
+                <span class="value">Unit {{ detailModal.unit }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Nama</span>
+                <span class="value">{{ detailModal.nama }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Nominal</span>
+                <span class="value">{{ formatRupiah(detailModal.nominal) }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Kegunaan</span>
+                <span class="value">{{ detailModal.kegunaan || '-' }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Tanggal</span>
+                <span class="value">{{ detailModal.tanggal ? formatDate(detailModal.tanggal) : '-' }}</span>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" @click="detailModal.show = false">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script>
+    // ============ KONFIGURASI JSONBIN ============
+    const JSONBIN_BIN_ID = '6aa5ac51ac6210605ac5c577';
+    const JSONBIN_API_KEY = '$2a$10$3QqX.FTn0mo5RZuK3TeW0uuMlDomXSwPEwfRmrGOJpiLv6bbuESsy';
+    const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID;
+    // ============================================
+
+    new Vue({
+        el: '#app',
+        data: {
+            units: {
+                '19': { modal: 3500000, pendapatan: 0 },
+                '21': { modal: 3000000, pendapatan: 0 },
+                '29': { modal: 3600000, pendapatan: 0 }
+            },
+            transaksi: [],
+            slotData: {},
+            selectedUnit: '19',
+            currentMonth: new Date().getMonth(),
+            currentYear: new Date().getFullYear(),
+            hours: ['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
+            form: {
+                jenis: 'income',
+                unit: '19',
+                nominal: '',
+                nama: '',
+                durasi: 1,
+                checkin: '',
+                kegunaan: ''
+            },
+            conflictDetected: false,
+            syncStatus: '', // '', 'saving', 'error'
+            syncText: 'Memuat data...',
+            editModal: {
+                show: false,
+                index: null,
+                key: null,
+                unit: '19',
+                nama: '',
+                harga: 0,
+                durasi: 1,
+                checkin: '',
+                jenis: 'income',
+                kegunaan: '',
+                oldData: null,
+                oldUnit: '19'
+            },
+            detailModal: {
+                show: false,
+                unit: '',
+                nama: '',
+                nominal: 0,
+                kegunaan: '',
+                tanggal: ''
+            }
+        },
+        computed: {
+            totalKotor() {
+                let sum = 0;
+                for (let key in this.units) sum += this.units[key].pendapatan;
+                return sum;
+            },
+            totalPengeluaran() {
+                return this.transaksi.filter(t => t.jenis === 'expense').reduce((a, b) => a + b.nominal, 0);
+            },
+            totalBersih() {
+                return this.totalKotor - this.totalPengeluaran;
+            },
+            daysInMonth() {
+                const days = [];
+                const firstDay = new Date(this.currentYear, this.currentMonth, 1);
+                const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
+                const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+                
+                let start = new Date(firstDay);
+                start.setDate(firstDay.getDate() - firstDay.getDay());
+                
+                let end = new Date(lastDay);
+                end.setDate(lastDay.getDate() + (6 - lastDay.getDay()));
+                
+                let current = new Date(start);
+                while (current <= end) {
+                    days.push({
+                        nama: dayNames[current.getDay()],
+                        tanggal: current.getDate(),
+                        fullDate: new Date(current)
+                    });
+                    current.setDate(current.getDate() + 1);
+                }
+                return days;
+            }
+        },
+        methods: {
+            formatRupiah(val) {
+                return 'Rp ' + Number(val).toLocaleString('id-ID');
+            },
+            formatShort(val) {
+                const n = Number(val);
+                if (Math.abs(n) >= 1000000) {
+                    return (n/1000000).toFixed(1).replace('.0','') + 'jt';
+                }
+                if (Math.abs(n) >= 1000) {
+                    return Math.round(n/1000) + 'rb';
+                }
+                return n.toString();
+            },
+            formatDate(dt) {
+                if (!dt) return '-';
+                const d = new Date(dt);
+                return d.toLocaleString('id-ID', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+            },
+            statusWarna(pendapatan, modal) {
+                if (pendapatan >= modal) return 'green';
+                if (pendapatan >= modal * 0.8) return 'yellow';
+                return 'red';
+            },
+            expensePerUnit(unit) {
+                return this.transaksi
+                    .filter(t => t.jenis === 'expense' && t.unit === unit)
+                    .reduce((a, b) => a + b.nominal, 0);
+            },
+            bersihPerUnit(unit) {
+                return this.units[unit].pendapatan - this.expensePerUnit(unit);
+            },
+            getBulanTahun() {
+                const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+                return bulan[this.currentMonth] + ' ' + this.currentYear;
+            },
+            prevMonth() {
+                if (this.currentMonth === 0) {
+                    this.currentMonth = 11;
+                    this.currentYear--;
+                } else {
+                    this.currentMonth--;
+                }
+            },
+            nextMonth() {
+                if (this.currentMonth === 11) {
+                    this.currentMonth = 0;
+                    this.currentYear++;
+                } else {
+                    this.currentMonth++;
+                }
+            },
+            getSlotKey(unit, day, jam) {
+                const dateStr = this.currentYear + '-' + String(this.currentMonth+1).padStart(2,'0') + '-' + String(day.tanggal).padStart(2,'0');
+                return unit + '|' + dateStr + '|' + jam;
+            },
+            getSlotData(unit, day, jam) {
+                const key = this.getSlotKey(unit, day, jam);
+                return this.slotData[key] || null;
+            },
+            getSlotClass(unit, day, jam) {
+                const data = this.getSlotData(unit, day, jam);
+                if (data) return 'booked';
+                return 'available';
+            },
+            lihatPengeluaran() {
+                const expenses = this.transaksi.filter(t => t.jenis === 'expense');
+                if (expenses.length === 0) {
+                    alert('Belum ada pengeluaran.');
+                    return;
+                }
+                const last = expenses[expenses.length - 1];
+                this.detailModal.show = true;
+                this.detailModal.unit = last.unit;
+                this.detailModal.nama = last.nama;
+                this.detailModal.nominal = last.nominal;
+                this.detailModal.kegunaan = last.kegunaan || '-';
+                this.detailModal.tanggal = last.checkin;
+            },
+            openEditModal(unit, day, jam) {
+                const data = this.getSlotData(unit, day, jam);
+                if (!data) return;
+                
+                let foundIdx = -1;
+                const dateStr = this.currentYear + '-' + String(this.currentMonth+1).padStart(2,'0') + '-' + String(day.tanggal).padStart(2,'0');
+                const jamInt = parseInt(jam.split(':')[0]);
+                
+                for (let i = 0; i < this.transaksi.length; i++) {
+                    const t = this.transaksi[i];
+                    if (t.jenis !== 'income') continue;
+                    if (!t.checkin) continue;
+                    const checkin = new Date(t.checkin);
+                    const tgl = checkin.getFullYear() + '-' + String(checkin.getMonth()+1).padStart(2,'0') + '-' + String(checkin.getDate()).padStart(2,'0');
+                    if (tgl === dateStr && checkin.getHours() === jamInt && t.unit == unit) {
+                        foundIdx = i;
+                        break;
+                    }
+                }
+                
+                if (foundIdx === -1) {
+                    for (let i = 0; i < this.transaksi.length; i++) {
+                        const t = this.transaksi[i];
+                        if (t.jenis === 'income' && t.nama === data.nama && t.nominal === data.harga) {
+                            foundIdx = i;
+                            break;
+                        }
+                    }
+                }
+                
+                if (foundIdx === -1) {
+                    alert('Tidak ditemukan data transaksi untuk diedit.');
+                    return;
+                }
+                
+                const t = this.transaksi[foundIdx];
+                this.editModal.show = true;
+                this.editModal.index = foundIdx;
+                this.editModal.key = this.getSlotKey(unit, day, jam);
+                this.editModal.unit = t.unit;
+                this.editModal.oldUnit = t.unit;
+                this.editModal.nama = t.nama;
+                this.editModal.harga = Math.round(t.nominal / 1000);
+                this.editModal.durasi = t.durasi || 1;
+                this.editModal.checkin = t.checkin || '';
+                this.editModal.jenis = t.jenis;
+                this.editModal.kegunaan = t.kegunaan || '';
+                this.editModal.oldData = {
+                    nominal: t.nominal,
+                    durasi: t.durasi,
+                    checkin: t.checkin,
+                    nama: t.nama,
+                    unit: t.unit,
+                    kegunaan: t.kegunaan
+                };
+            },
+            openEditTransaksi(idx) {
+                const t = this.transaksi[idx];
+                this.editModal.show = true;
+                this.editModal.index = idx;
+                this.editModal.key = null;
+                this.editModal.unit = t.unit;
+                this.editModal.oldUnit = t.unit;
+                this.editModal.nama = t.nama;
+                this.editModal.harga = Math.round(t.nominal / 1000);
+                this.editModal.durasi = t.durasi || 0;
+                this.editModal.checkin = t.checkin || '';
+                this.editModal.jenis = t.jenis;
+                this.editModal.kegunaan = t.kegunaan || '';
+                this.editModal.oldData = {
+                    nominal: t.nominal,
+                    durasi: t.durasi,
+                    checkin: t.checkin,
+                    nama: t.nama,
+                    unit: t.unit,
+                    kegunaan: t.kegunaan
+                };
+            },
+            saveEdit() {
+                const idx = this.editModal.index;
+                if (idx === null || idx === undefined) return;
+                
+                const t = this.transaksi[idx];
+                if (!t) return;
+                
+                const oldNominal = t.nominal;
+                const oldUnit = t.unit;
+                const newNominal = this.editModal.harga * 1000;
+                const newDurasi = this.editModal.durasi || 1;
+                const newCheckin = this.editModal.checkin;
+                const newNama = this.editModal.nama;
+                const newUnit = this.editModal.unit;
+                const newKegunaan = this.editModal.kegunaan;
+                
+                if (t.jenis === 'income' && t.checkin) {
+                    const oldCheckin = new Date(t.checkin);
+                    for (let h = 0; h < (t.durasi || 1); h++) {
+                        const jamSekarang = new Date(oldCheckin);
+                        jamSekarang.setHours(oldCheckin.getHours() + h);
+                        const tgl = jamSekarang.getFullYear() + '-' + String(jamSekarang.getMonth()+1).padStart(2,'0') + '-' + String(jamSekarang.getDate()).padStart(2,'0');
+                        const jamKey = String(jamSekarang.getHours()).padStart(2, '0') + ':00';
+                        const key = oldUnit + '|' + tgl + '|' + jamKey;
+                        delete this.slotData[key];
+                    }
+                }
+                
+                t.unit = newUnit;
+                t.nama = newNama;
+                t.nominal = newNominal;
+                t.durasi = (t.jenis === 'expense') ? 0 : newDurasi;
+                t.checkin = newCheckin;
+                t.kegunaan = newKegunaan;
+                
+                if (newCheckin && t.jenis === 'income') {
+                    const checkoutDate = new Date(newCheckin);
+                    checkoutDate.setHours(checkoutDate.getHours() + newDurasi);
+                    t.checkout = checkoutDate.toISOString().slice(0, 16);
+                } else if (t.jenis === 'expense') {
+                    t.checkout = null;
+                }
+                
+                if (t.jenis === 'income') {
+                    this.units[oldUnit].pendapatan -= oldNominal;
+                    this.units[newUnit].pendapatan += newNominal;
+                }
+                
+                if (t.jenis === 'income' && newCheckin) {
+                    const checkin = new Date(newCheckin);
+                    for (let h = 0; h < newDurasi; h++) {
+                        const jamSekarang = new Date(checkin);
+                        jamSekarang.setHours(checkin.getHours() + h);
+                        const tgl = jamSekarang.getFullYear() + '-' + String(jamSekarang.getMonth()+1).padStart(2,'0') + '-' + String(jamSekarang.getDate()).padStart(2,'0');
+                        const jamKey = String(jamSekarang.getHours()).padStart(2, '0') + ':00';
+                        const key = newUnit + '|' + tgl + '|' + jamKey;
+                        this.slotData[key] = {
+                            nama: newNama,
+                            harga: newNominal,
+                            durasi: newDurasi
+                        };
+                    }
+                }
+                
+                this.editModal.show = false;
+                this.simpanData();
+            },
+            deleteEdit() {
+                if (!confirm('Hapus transaksi ini?')) return;
+                const idx = this.editModal.index;
+                if (idx !== null && idx !== undefined) {
+                    this.hapusTransaksi(idx);
+                }
+                this.editModal.show = false;
+            },
+            cekTabrakan() {
+                if (this.form.jenis !== 'income' || !this.form.checkin || !this.form.durasi) {
+                    this.conflictDetected = false;
+                    return;
+                }
+                const start = new Date(this.form.checkin);
+                
+                for (let h = 0; h < this.form.durasi; h++) {
+                    const jamSekarang = new Date(start);
+                    jamSekarang.setHours(start.getHours() + h);
+                    const tgl = jamSekarang.getFullYear() + '-' + String(jamSekarang.getMonth()+1).padStart(2,'0') + '-' + String(jamSekarang.getDate()).padStart(2,'0');
+                    const jamKey = String(jamSekarang.getHours()).padStart(2, '0') + ':00';
+                    const key = this.form.unit + '|' + tgl + '|' + jamKey;
+                    if (this.slotData[key]) {
+                        this.conflictDetected = true;
+                        return;
+                    }
+                }
+                this.conflictDetected = false;
+            },
+            tambahPemasukan() {
+                if (!this.form.nominal || this.form.nominal <= 0) {
+                    alert('Masukkan nominal (contoh: 350 = 350.000)');
+                    return;
+                }
+                if (!this.form.nama) {
+                    alert('Masukkan nama penyewa');
+                    return;
+                }
+                if (!this.form.checkin) {
+                    alert('Masukkan waktu check-in');
+                    return;
+                }
+                
+                this.cekTabrakan();
+                if (this.conflictDetected) {
+                    alert('⚠️ JAM INI SUDAH TERBOOKING! Silakan pilih jam lain.');
+                    return;
+                }
+                
+                const nominal = this.form.nominal * 1000;
+                const unit = this.form.unit;
+                const durasi = this.form.durasi || 1;
+                
+                const checkin = new Date(this.form.checkin);
+                const checkout = new Date(checkin);
+                checkout.setHours(checkout.getHours() + durasi);
+                
+                const entry = {
+                    unit: unit,
+                    jenis: 'income',
+                    nominal: nominal,
+                    nama: this.form.nama,
+                    durasi: durasi,
+                    checkin: this.form.checkin,
+                    checkout: checkout.toISOString().slice(0, 16),
+                    kegunaan: ''
+                };
+                
+                for (let h = 0; h < durasi; h++) {
+                    const jamSekarang = new Date(checkin);
+                    jamSekarang.setHours(checkin.getHours() + h);
+                    const tgl = jamSekarang.getFullYear() + '-' + String(jamSekarang.getMonth()+1).padStart(2,'0') + '-' + String(jamSekarang.getDate()).padStart(2,'0');
+                    const jamKey = String(jamSekarang.getHours()).padStart(2, '0') + ':00';
+                    const key = unit + '|' + tgl + '|' + jamKey;
+                    this.slotData[key] = {
+                        nama: this.form.nama,
+                        harga: nominal,
+                        durasi: durasi
+                    };
+                }
+                
+                this.units[unit].pendapatan += nominal;
+                this.transaksi.push(entry);
+                this.simpanData();
+                
+                this.form.nominal = '';
+                this.form.nama = '';
+                this.form.durasi = 1;
+                this.form.checkin = '';
+                this.conflictDetected = false;
+            },
+            tambahPengeluaran() {
+                if (!this.form.nominal || this.form.nominal <= 0) {
+                    alert('Masukkan nominal (contoh: 350 = 350.000)');
+                    return;
+                }
+                if (!this.form.nama) {
+                    alert('Masukkan nama peminjam');
+                    return;
+                }
+                if (!this.form.kegunaan) {
+                    alert('Masukkan kegunaan pengeluaran');
+                    return;
+                }
+                
+                const nominal = this.form.nominal * 1000;
+                const unit = this.form.unit;
+                
+                const entry = {
+                    unit: unit,
+                    jenis: 'expense',
+                    nominal: nominal,
+                    nama: this.form.nama,
+                    durasi: 0,
+                    checkin: this.form.checkin || null,
+                    checkout: null,
+                    kegunaan: this.form.kegunaan
+                };
+                
+                this.transaksi.push(entry);
+                this.simpanData();
+                
+                this.form.nominal = '';
+                this.form.nama = '';
+                this.form.checkin = '';
+                this.form.kegunaan = '';
+            },
+            hapusTransaksi(idx) {
+                const t = this.transaksi[idx];
+                if (!t) return;
+                if (t.jenis === 'income') {
+                    this.units[t.unit].pendapatan -= t.nominal;
+                    if (t.checkin && t.durasi) {
+                        const checkin = new Date(t.checkin);
+                        for (let h = 0; h < t.durasi; h++) {
+                            const jamSekarang = new Date(checkin);
+                            jamSekarang.setHours(checkin.getHours() + h);
+                            const tgl = jamSekarang.getFullYear() + '-' + String(jamSekarang.getMonth()+1).padStart(2,'0') + '-' + String(jamSekarang.getDate()).padStart(2,'0');
+                            const jamKey = String(jamSekarang.getHours()).padStart(2, '0') + ':00';
+                            const key = t.unit + '|' + tgl + '|' + jamKey;
+                            delete this.slotData[key];
+                        }
+                    }
+                }
+                this.transaksi.splice(idx, 1);
+                this.simpanData();
+            },
+            resetAll() {
+                if (!confirm('Reset semua data? (akan menghapus di cloud juga)')) return;
+                for (let key in this.units) {
+                    this.units[key].pendapatan = 0;
+                }
+                this.transaksi = [];
+                this.slotData = {};
+                this.simpanData();
+            },
+
+            // ============ CLOUD SYNC (JSONBIN) ============
+            async simpanData() {
+                this.syncStatus = 'saving';
+                this.syncText = 'Menyimpan...';
+                
+                const payload = {
+                    units: this.units,
+                    transaksi: this.transaksi,
+                    slotData: this.slotData
+                };
+                
+                // Simpan juga di localStorage sebagai backup
+                try {
+                    localStorage.setItem('mayora_backup', JSON.stringify(payload));
+                } catch (e) {}
+                
+                try {
+                    const res = await fetch(JSONBIN_URL, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Master-Key': JSONBIN_API_KEY
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!res.ok) throw new Error('Gagal simpan');
+                    
+                    this.syncStatus = '';
+                    this.syncText = 'Tersimpan di cloud ✓';
+                    setTimeout(() => {
+                        if (this.syncStatus === '') this.syncText = 'Cloud sync aktif';
+                    }, 2000);
+                } catch (e) {
+                    console.error('Save error:', e);
+                    this.syncStatus = 'error';
+                    this.syncText = 'Gagal simpan, cek internet';
+                }
+            },
+            async muatData() {
+                this.syncText = 'Memuat dari cloud...';
+                
+                try {
+                    const res = await fetch(JSONBIN_URL + '/latest', {
+                        method: 'GET',
+                        headers: {
+                            'X-Master-Key': JSONBIN_API_KEY
+                        }
+                    });
+                    
+                    if (!res.ok) throw new Error('Gagal muat');
+                    
+                    const json = await res.json();
+                    const data = json.record;
+                    
+                    if (data) {
+                        if (data.units) this.units = data.units;
+                        if (data.transaksi) this.transaksi = data.transaksi;
+                        if (data.slotData) this.slotData = data.slotData;
+                        
+                        this.syncStatus = '';
+                        this.syncText = 'Cloud sync aktif';
+                    }
+                } catch (e) {
+                    console.error('Load error:', e);
+                    this.syncStatus = 'error';
+                    this.syncText = 'Gagal muat, pakai data lokal';
+                    
+                    // Fallback ke localStorage
+                    try {
+                        const backup = localStorage.getItem('mayora_backup');
+                        if (backup) {
+                            const data = JSON.parse(backup);
+                            if (data.units) this.units = data.units;
+                            if (data.transaksi) this.transaksi = data.transaksi;
+                            if (data.slotData) this.slotData = data.slotData;
+                        }
+                    } catch (e2) {}
+                }
+            }
+            // ============================================
+        },
+        watch: {
+            'form.checkin': function() { this.cekTabrakan(); },
+            'form.durasi': function() { this.cekTabrakan(); },
+            'form.unit': function() { this.cekTabrakan(); }
+        },
+        mounted() {
+            this.muatData();
+            
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            this.form.checkin = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
+        }
+    });
+</script>
+</body>
+</html>
