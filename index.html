@@ -43,19 +43,24 @@
             text-align: center; margin-bottom: 4px;
         }
         .unit-card .row {
-            display: flex; justify-content: space-between;
-            font-size: 8px; margin-bottom: 1px;
+            display: flex; flex-direction: column;
+            font-size: 8px; margin-bottom: 2px;
         }
         .unit-card .row .lbl { color: #8a9bb0; }
-        .unit-card .row .val { font-weight: 600; color: #1a2634; }
+        .unit-card .row .val {
+            font-weight: 700; color: #1a2634;
+            font-size: 9px; letter-spacing: -0.2px;
+            word-break: break-all;
+        }
         .unit-card .row .val.green { color: #27ae60; }
         .unit-card .row .val.red { color: #e74c3c; }
         .unit-card .row .val.orange { color: #e67e22; }
         .unit-card .row.big {
-            font-size: 10px; margin-top: 3px; padding-top: 3px;
+            margin-top: 3px; padding-top: 3px;
             border-top: 1px dashed #dce3ed;
         }
-        .unit-card .row.big .val { font-size: 11px; }
+        .unit-card .row.big .val { font-size: 10px; }
+        .unit-card .row.modal-row .val { font-size: 8px; color: #5e6f8d; }
 
         .recap-grid {
             display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px;
@@ -64,7 +69,7 @@
             background: white; padding: 6px 8px; border-radius: 8px; cursor: pointer;
         }
         .recap-item .label { font-size: 8px; color: #8a9bb0; font-weight: 500; }
-        .recap-item .value { font-size: 14px; font-weight: 700; color: #1a2634; }
+        .recap-item .value { font-size: 13px; font-weight: 700; color: #1a2634; word-break: break-all; }
         .recap-item .value.green { color: #27ae60; }
         .recap-item .value.yellow { color: #f39c12; }
         .recap-item .value.red { color: #e74c3c; }
@@ -100,6 +105,17 @@
         .form-row .field input:focus,
         .form-row .field select:focus {
             outline: none; border-color: #d4a373;
+        }
+        .nominal-wrap {
+            position: relative;
+        }
+        .nominal-wrap .prefix {
+            position: absolute; left: 6px; top: 50%; transform: translateY(-50%);
+            font-size: 10px; color: #8a9bb0; font-weight: 600; pointer-events: none;
+        }
+        .nominal-wrap input { padding-left: 24px !important; }
+        .nominal-hint {
+            font-size: 7px; color: #8a9bb0; margin-top: 1px; text-align: right;
         }
         .btn-add {
             width: 100%; border: none; color: white; font-weight: 700;
@@ -137,15 +153,21 @@
         }
         .schedule-table-wrap { overflow-x: auto; }
         .schedule-table {
-            width: 100%; border-collapse: collapse; font-size: 8px; min-width: 420px;
+            width: 100%; border-collapse: collapse; font-size: 8px; min-width: 1000px;
         }
         .schedule-table th {
             background: #f0f4fa; color: #1f2a3a; font-weight: 600;
-            padding: 3px 2px; text-align: center; border: 1px solid #dce3ed; font-size: 7px;
+            padding: 3px 2px; text-align: center; border: 1px solid #dce3ed; font-size: 8px;
+            position: sticky; top: 0; z-index: 2;
         }
         .schedule-table th .tgl {
+            font-weight: 700; font-size: 9px; color: #1a2634; display: block; line-height: 1;
+        }
+        .schedule-table th .hari {
             font-weight: 400; font-size: 6px; color: #8a9bb0; display: block;
         }
+        .schedule-table th.weekend .hari { color: #e74c3c; }
+        .schedule-table th.today-col { background: #d4a37344; }
         .schedule-table td {
             padding: 3px 2px; text-align: center; border: 1px solid #dce3ed;
             font-size: 7px; min-width: 30px; cursor: pointer;
@@ -153,6 +175,7 @@
         .schedule-table .time-col {
             font-weight: 600; color: #5e6f8d; background: #f8fafc;
             min-width: 32px; font-size: 6px; cursor: default;
+            position: sticky; left: 0; z-index: 1;
         }
         .schedule-table .booked {
             background: #e74c3c22; color: #c0392b; font-weight: 600;
@@ -169,6 +192,8 @@
         .schedule-table .available .empty-text {
             font-size: 5px; color: #8a9bb0;
         }
+        .schedule-table td.today-col { background: #fdfaf7; }
+        .schedule-table td.today-col.available { background: #27ae6033; }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -270,21 +295,21 @@
             <div class="unit-label">Unit {{ u }}</div>
             <div class="row">
                 <span class="lbl">Kotor</span>
-                <span class="val">{{ formatShort(units[u].pendapatan) }}</span>
+                <span class="val">{{ formatDetail(units[u].pendapatan) }}</span>
             </div>
             <div class="row">
                 <span class="lbl">Keluar</span>
-                <span class="val orange">{{ formatShort(expensePerUnit(u)) }}</span>
+                <span class="val orange">{{ formatDetail(expensePerUnit(u)) }}</span>
             </div>
             <div class="row big">
                 <span class="lbl">Bersih</span>
-                <span class="val" :class="bersihPerUnit(u) >= 0 && units[u].pendapatan >= units[u].modal ? 'green' : 'red'">
-                    {{ formatShort(bersihPerUnit(u)) }}
+                <span class="val" :class="bersihPerUnit(u) >= 0 ? 'green' : 'red'">
+                    {{ formatDetail(bersihPerUnit(u)) }}
                 </span>
             </div>
-            <div class="row">
-                <span class="lbl" style="font-size:7px;">Modal</span>
-                <span class="val" style="font-size:7px;">{{ formatShort(units[u].modal) }}</span>
+            <div class="row modal-row">
+                <span class="lbl">Modal</span>
+                <span class="val">{{ formatDetail(units[u].modal) }}</span>
             </div>
         </div>
     </div>
@@ -329,9 +354,13 @@
                         <option value="29">29</option>
                     </select>
                 </div>
-                <div class="field">
-                    <label>Nominal (contoh: 350)</label>
-                    <input v-model.number="form.nominal" type="number" placeholder="350" />
+                <div class="field" style="flex:2;">
+                    <label>Nominal (Rp)</label>
+                    <div class="nominal-wrap">
+                        <span class="prefix">Rp</span>
+                        <input :value="form.nominalDisplay" @input="onNominalInput($event, 'form')" type="text" inputmode="numeric" placeholder="350.000" />
+                    </div>
+                    <div class="nominal-hint">{{ formatRupiah(form.nominal || 0) }}</div>
                 </div>
             </div>
             <div class="form-row">
@@ -369,9 +398,13 @@
                         <option value="29">29</option>
                     </select>
                 </div>
-                <div class="field">
-                    <label>Nominal (contoh: 350)</label>
-                    <input v-model.number="form.nominal" type="number" placeholder="350" />
+                <div class="field" style="flex:2;">
+                    <label>Nominal (Rp)</label>
+                    <div class="nominal-wrap">
+                        <span class="prefix">Rp</span>
+                        <input :value="form.nominalDisplay" @input="onNominalInput($event, 'form')" type="text" inputmode="numeric" placeholder="350.000" />
+                    </div>
+                    <div class="nominal-hint">{{ formatRupiah(form.nominal || 0) }}</div>
                 </div>
             </div>
             <div class="form-row">
@@ -402,6 +435,7 @@
             </div>
             <div class="schedule-nav">
                 <button @click="prevMonth">◀️</button>
+                <button @click="goToday">Hari ini</button>
                 <button @click="nextMonth">▶️</button>
             </div>
         </div>
@@ -409,22 +443,23 @@
             <table class="schedule-table">
                 <thead>
                     <tr>
-                        <th style="min-width:30px;">Jam</th>
-                        <th v-for="day in daysInMonth" :key="day.tanggal">
-                            {{ day.nama }}
+                        <th style="min-width:32px;">Jam</th>
+                        <th v-for="day in daysInMonth" :key="day.tanggal"
+                            :class="{ weekend: day.weekend, 'today-col': day.isToday }">
                             <span class="tgl">{{ day.tanggal }}</span>
+                            <span class="hari">{{ day.nama }}</span>
                         </th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="jam in hours" :key="jam">
                         <td class="time-col">{{ jam }}</td>
-                        <td v-for="day in daysInMonth" :key="day.tanggal" 
-                            :class="getSlotClass(selectedUnit, day, jam)"
+                        <td v-for="day in daysInMonth" :key="day.tanggal"
+                            :class="[getSlotClass(selectedUnit, day, jam), { 'today-col': day.isToday }]"
                             @click="openEditModal(selectedUnit, day, jam)">
                             <span v-if="getSlotData(selectedUnit, day, jam)">
                                 <span class="nama">{{ getSlotData(selectedUnit, day, jam).nama }}</span>
-                                <span class="harga">{{ formatRupiah(getSlotData(selectedUnit, day, jam).harga) }}</span>
+                                <span class="harga">{{ formatDetail(getSlotData(selectedUnit, day, jam).harga) }}</span>
                             </span>
                             <span v-else class="empty-text">—</span>
                         </td>
@@ -488,8 +523,12 @@
                 <input v-model="editModal.nama" />
             </div>
             <div class="field">
-                <label>Harga (contoh: 350 = 350.000)</label>
-                <input v-model.number="editModal.harga" type="number" />
+                <label>Harga (Rp)</label>
+                <div class="nominal-wrap">
+                    <span class="prefix">Rp</span>
+                    <input :value="editModal.hargaDisplay" @input="onNominalInput($event, 'edit')" type="text" inputmode="numeric" placeholder="350.000" />
+                </div>
+                <div class="nominal-hint">{{ formatRupiah(editModal.harga || 0) }}</div>
             </div>
             <div class="field" v-if="editModal.jenis !== 'expense'">
                 <label>Durasi (jam)</label>
@@ -547,11 +586,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
 <script>
-    // ============ KONFIGURASI JSONBIN ============
+    // ============ KONFIGURASI JSONBIN (JANGAN DIUBAH) ============
     const JSONBIN_BIN_ID = '6aa5ac51ac6210605ac5c577';
     const JSONBIN_API_KEY = '$2a$10$3QqX.FTn0mo5RZuK3TeW0uuMlDomXSwPEwfRmrGOJpiLv6bbuESsy';
     const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID;
-    // ============================================
+    // ============================================================
 
     new Vue({
         el: '#app',
@@ -577,7 +616,7 @@
                 kegunaan: ''
             },
             conflictDetected: false,
-            syncStatus: '', // '', 'saving', 'error'
+            syncStatus: '',
             syncText: 'Memuat data...',
             editModal: {
                 show: false,
@@ -614,43 +653,66 @@
             totalBersih() {
                 return this.totalKotor - this.totalPengeluaran;
             },
+            // ===== display helper untuk input auto-format =====
+            'form.nominalDisplay'() {
+                return this.formatNumberInput(this.form.nominal);
+            },
+            'editModal.hargaDisplay'() {
+                return this.formatNumberInput(this.editModal.harga);
+            },
             daysInMonth() {
                 const days = [];
-                const firstDay = new Date(this.currentYear, this.currentMonth, 1);
-                const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
                 const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-                
-                let start = new Date(firstDay);
-                start.setDate(firstDay.getDate() - firstDay.getDay());
-                
-                let end = new Date(lastDay);
-                end.setDate(lastDay.getDate() + (6 - lastDay.getDay()));
-                
-                let current = new Date(start);
-                while (current <= end) {
+                const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
+                const today = new Date();
+                const isThisMonth = (today.getFullYear() === this.currentYear && today.getMonth() === this.currentMonth);
+
+                for (let d = 1; d <= lastDay; d++) {
+                    const dateObj = new Date(this.currentYear, this.currentMonth, d);
+                    const dow = dateObj.getDay();
                     days.push({
-                        nama: dayNames[current.getDay()],
-                        tanggal: current.getDate(),
-                        fullDate: new Date(current)
+                        nama: dayNames[dow],
+                        tanggal: d,
+                        weekend: (dow === 0 || dow === 6),
+                        isToday: isThisMonth && today.getDate() === d
                     });
-                    current.setDate(current.getDate() + 1);
                 }
                 return days;
             }
         },
         methods: {
-            formatRupiah(val) {
-                return 'Rp ' + Number(val).toLocaleString('id-ID');
+            // Format angka penuh dengan titik ribuan (tanpa Rp)
+            formatDetail(val) {
+                const n = Math.round(Number(val) || 0);
+                return n.toLocaleString('id-ID');
             },
-            formatShort(val) {
-                const n = Number(val);
-                if (Math.abs(n) >= 1000000) {
-                    return (n/1000000).toFixed(1).replace('.0','') + 'jt';
+            formatRupiah(val) {
+                return 'Rp ' + Number(val || 0).toLocaleString('id-ID');
+            },
+            // Format untuk nilai di dalam <input> (tanpa Rp, pakai titik)
+            formatNumberInput(val) {
+                if (val === '' || val === null || val === undefined) return '';
+                const n = Math.round(Number(val) || 0);
+                if (n === 0) return '';
+                return n.toLocaleString('id-ID');
+            },
+            // Handler input auto-format: buang non-digit, format ulang
+            onNominalInput(e, target) {
+                const raw = e.target.value.replace(/[^\d]/g, '');
+                const num = raw === '' ? '' : parseInt(raw, 10);
+                if (target === 'form') {
+                    this.form.nominal = num;
+                } else if (target === 'edit') {
+                    this.editModal.harga = num;
                 }
-                if (Math.abs(n) >= 1000) {
-                    return Math.round(n/1000) + 'rb';
-                }
-                return n.toString();
+                // Paksa tampilan mengikuti format (karena :value reaktif, Vue akan update)
+                this.$nextTick(() => {
+                    if (target === 'form') {
+                        e.target.value = this.formatNumberInput(this.form.nominal);
+                    } else {
+                        e.target.value = this.formatNumberInput(this.editModal.harga);
+                    }
+                });
             },
             formatDate(dt) {
                 if (!dt) return '-';
@@ -690,6 +752,11 @@
                     this.currentMonth++;
                 }
             },
+            goToday() {
+                const now = new Date();
+                this.currentMonth = now.getMonth();
+                this.currentYear = now.getFullYear();
+            },
             getSlotKey(unit, day, jam) {
                 const dateStr = this.currentYear + '-' + String(this.currentMonth+1).padStart(2,'0') + '-' + String(day.tanggal).padStart(2,'0');
                 return unit + '|' + dateStr + '|' + jam;
@@ -720,11 +787,11 @@
             openEditModal(unit, day, jam) {
                 const data = this.getSlotData(unit, day, jam);
                 if (!data) return;
-                
+
                 let foundIdx = -1;
                 const dateStr = this.currentYear + '-' + String(this.currentMonth+1).padStart(2,'0') + '-' + String(day.tanggal).padStart(2,'0');
                 const jamInt = parseInt(jam.split(':')[0]);
-                
+
                 for (let i = 0; i < this.transaksi.length; i++) {
                     const t = this.transaksi[i];
                     if (t.jenis !== 'income') continue;
@@ -736,7 +803,7 @@
                         break;
                     }
                 }
-                
+
                 if (foundIdx === -1) {
                     for (let i = 0; i < this.transaksi.length; i++) {
                         const t = this.transaksi[i];
@@ -746,12 +813,12 @@
                         }
                     }
                 }
-                
+
                 if (foundIdx === -1) {
                     alert('Tidak ditemukan data transaksi untuk diedit.');
                     return;
                 }
-                
+
                 const t = this.transaksi[foundIdx];
                 this.editModal.show = true;
                 this.editModal.index = foundIdx;
@@ -759,7 +826,7 @@
                 this.editModal.unit = t.unit;
                 this.editModal.oldUnit = t.unit;
                 this.editModal.nama = t.nama;
-                this.editModal.harga = Math.round(t.nominal / 1000);
+                this.editModal.harga = t.nominal; // ANGKA PENUH, bukan /1000
                 this.editModal.durasi = t.durasi || 1;
                 this.editModal.checkin = t.checkin || '';
                 this.editModal.jenis = t.jenis;
@@ -781,7 +848,7 @@
                 this.editModal.unit = t.unit;
                 this.editModal.oldUnit = t.unit;
                 this.editModal.nama = t.nama;
-                this.editModal.harga = Math.round(t.nominal / 1000);
+                this.editModal.harga = t.nominal; // ANGKA PENUH
                 this.editModal.durasi = t.durasi || 0;
                 this.editModal.checkin = t.checkin || '';
                 this.editModal.jenis = t.jenis;
@@ -798,19 +865,19 @@
             saveEdit() {
                 const idx = this.editModal.index;
                 if (idx === null || idx === undefined) return;
-                
+
                 const t = this.transaksi[idx];
                 if (!t) return;
-                
+
                 const oldNominal = t.nominal;
                 const oldUnit = t.unit;
-                const newNominal = this.editModal.harga * 1000;
+                const newNominal = Number(this.editModal.harga) || 0; // ANGKA PENUH, tanpa *1000
                 const newDurasi = this.editModal.durasi || 1;
                 const newCheckin = this.editModal.checkin;
                 const newNama = this.editModal.nama;
                 const newUnit = this.editModal.unit;
                 const newKegunaan = this.editModal.kegunaan;
-                
+
                 if (t.jenis === 'income' && t.checkin) {
                     const oldCheckin = new Date(t.checkin);
                     for (let h = 0; h < (t.durasi || 1); h++) {
@@ -822,14 +889,14 @@
                         delete this.slotData[key];
                     }
                 }
-                
+
                 t.unit = newUnit;
                 t.nama = newNama;
                 t.nominal = newNominal;
                 t.durasi = (t.jenis === 'expense') ? 0 : newDurasi;
                 t.checkin = newCheckin;
                 t.kegunaan = newKegunaan;
-                
+
                 if (newCheckin && t.jenis === 'income') {
                     const checkoutDate = new Date(newCheckin);
                     checkoutDate.setHours(checkoutDate.getHours() + newDurasi);
@@ -837,12 +904,12 @@
                 } else if (t.jenis === 'expense') {
                     t.checkout = null;
                 }
-                
+
                 if (t.jenis === 'income') {
                     this.units[oldUnit].pendapatan -= oldNominal;
                     this.units[newUnit].pendapatan += newNominal;
                 }
-                
+
                 if (t.jenis === 'income' && newCheckin) {
                     const checkin = new Date(newCheckin);
                     for (let h = 0; h < newDurasi; h++) {
@@ -858,7 +925,7 @@
                         };
                     }
                 }
-                
+
                 this.editModal.show = false;
                 this.simpanData();
             },
@@ -876,7 +943,7 @@
                     return;
                 }
                 const start = new Date(this.form.checkin);
-                
+
                 for (let h = 0; h < this.form.durasi; h++) {
                     const jamSekarang = new Date(start);
                     jamSekarang.setHours(start.getHours() + h);
@@ -892,7 +959,7 @@
             },
             tambahPemasukan() {
                 if (!this.form.nominal || this.form.nominal <= 0) {
-                    alert('Masukkan nominal (contoh: 350 = 350.000)');
+                    alert('Masukkan nominal (contoh: 350.000)');
                     return;
                 }
                 if (!this.form.nama) {
@@ -903,21 +970,21 @@
                     alert('Masukkan waktu check-in');
                     return;
                 }
-                
+
                 this.cekTabrakan();
                 if (this.conflictDetected) {
                     alert('⚠️ JAM INI SUDAH TERBOOKING! Silakan pilih jam lain.');
                     return;
                 }
-                
-                const nominal = this.form.nominal * 1000;
+
+                const nominal = Number(this.form.nominal) || 0; // ANGKA PENUH
                 const unit = this.form.unit;
                 const durasi = this.form.durasi || 1;
-                
+
                 const checkin = new Date(this.form.checkin);
                 const checkout = new Date(checkin);
                 checkout.setHours(checkout.getHours() + durasi);
-                
+
                 const entry = {
                     unit: unit,
                     jenis: 'income',
@@ -928,7 +995,7 @@
                     checkout: checkout.toISOString().slice(0, 16),
                     kegunaan: ''
                 };
-                
+
                 for (let h = 0; h < durasi; h++) {
                     const jamSekarang = new Date(checkin);
                     jamSekarang.setHours(checkin.getHours() + h);
@@ -941,11 +1008,11 @@
                         durasi: durasi
                     };
                 }
-                
+
                 this.units[unit].pendapatan += nominal;
                 this.transaksi.push(entry);
                 this.simpanData();
-                
+
                 this.form.nominal = '';
                 this.form.nama = '';
                 this.form.durasi = 1;
@@ -954,7 +1021,7 @@
             },
             tambahPengeluaran() {
                 if (!this.form.nominal || this.form.nominal <= 0) {
-                    alert('Masukkan nominal (contoh: 350 = 350.000)');
+                    alert('Masukkan nominal (contoh: 350.000)');
                     return;
                 }
                 if (!this.form.nama) {
@@ -965,10 +1032,10 @@
                     alert('Masukkan kegunaan pengeluaran');
                     return;
                 }
-                
-                const nominal = this.form.nominal * 1000;
+
+                const nominal = Number(this.form.nominal) || 0; // ANGKA PENUH
                 const unit = this.form.unit;
-                
+
                 const entry = {
                     unit: unit,
                     jenis: 'expense',
@@ -979,10 +1046,10 @@
                     checkout: null,
                     kegunaan: this.form.kegunaan
                 };
-                
+
                 this.transaksi.push(entry);
                 this.simpanData();
-                
+
                 this.form.nominal = '';
                 this.form.nama = '';
                 this.form.checkin = '';
@@ -1010,6 +1077,7 @@
             },
             resetAll() {
                 if (!confirm('Reset semua data? (akan menghapus di cloud juga)')) return;
+                if (!confirm('Yakin? Data di cloud ikut terhapus!')) return;
                 for (let key in this.units) {
                     this.units[key].pendapatan = 0;
                 }
@@ -1018,22 +1086,21 @@
                 this.simpanData();
             },
 
-            // ============ CLOUD SYNC (JSONBIN) ============
+            // ============ CLOUD SYNC (JSONBIN) — TIDAK DIUBAH ============
             async simpanData() {
                 this.syncStatus = 'saving';
                 this.syncText = 'Menyimpan...';
-                
+
                 const payload = {
                     units: this.units,
                     transaksi: this.transaksi,
                     slotData: this.slotData
                 };
-                
-                // Simpan juga di localStorage sebagai backup
+
                 try {
                     localStorage.setItem('mayora_backup', JSON.stringify(payload));
                 } catch (e) {}
-                
+
                 try {
                     const res = await fetch(JSONBIN_URL, {
                         method: 'PUT',
@@ -1043,9 +1110,9 @@
                         },
                         body: JSON.stringify(payload)
                     });
-                    
+
                     if (!res.ok) throw new Error('Gagal simpan');
-                    
+
                     this.syncStatus = '';
                     this.syncText = 'Tersimpan di cloud ✓';
                     setTimeout(() => {
@@ -1059,7 +1126,7 @@
             },
             async muatData() {
                 this.syncText = 'Memuat dari cloud...';
-                
+
                 try {
                     const res = await fetch(JSONBIN_URL + '/latest', {
                         method: 'GET',
@@ -1067,17 +1134,17 @@
                             'X-Master-Key': JSONBIN_API_KEY
                         }
                     });
-                    
+
                     if (!res.ok) throw new Error('Gagal muat');
-                    
+
                     const json = await res.json();
                     const data = json.record;
-                    
+
                     if (data) {
                         if (data.units) this.units = data.units;
                         if (data.transaksi) this.transaksi = data.transaksi;
                         if (data.slotData) this.slotData = data.slotData;
-                        
+
                         this.syncStatus = '';
                         this.syncText = 'Cloud sync aktif';
                     }
@@ -1085,8 +1152,7 @@
                     console.error('Load error:', e);
                     this.syncStatus = 'error';
                     this.syncText = 'Gagal muat, pakai data lokal';
-                    
-                    // Fallback ke localStorage
+
                     try {
                         const backup = localStorage.getItem('mayora_backup');
                         if (backup) {
@@ -1098,7 +1164,7 @@
                     } catch (e2) {}
                 }
             }
-            // ============================================
+            // ============================================================
         },
         watch: {
             'form.checkin': function() { this.cekTabrakan(); },
@@ -1107,7 +1173,7 @@
         },
         mounted() {
             this.muatData();
-            
+
             const now = new Date();
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
