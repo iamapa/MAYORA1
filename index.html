@@ -5,269 +5,355 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
     <title>MAYORA - Manajemen Apartemen</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-        body { background: #f0f4fa; padding: 6px; min-height: 100vh; }
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { 
+            background: linear-gradient(135deg, #0f1419 0%, #1a2332 50%, #0f1419 100%);
+            background-attachment: fixed;
+            padding: 6px; min-height: 100vh;
+        }
         .container { max-width: 480px; margin: 0 auto; }
 
         .header {
-            background: white; padding: 8px 12px; border-radius: 10px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-bottom: 8px;
+            background: linear-gradient(135deg, #1a2332 0%, #232f42 100%);
+            padding: 10px 14px; border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(212,163,115,0.15);
+            margin-bottom: 8px;
             display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid rgba(212,163,115,0.2);
         }
-        .brand h1 { font-size: 17px; font-weight: 800; color: #1a2634; }
-        .brand h1 span { color: #d4a373; }
-        .brand-sub { font-size: 8px; color: #8a9bb0; }
+        .brand h1 { 
+            font-family: 'Playfair Display', serif;
+            font-size: 19px; font-weight: 800; 
+            background: linear-gradient(135deg, #d4a373 0%, #f0d4a8 50%, #d4a373 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1px;
+        }
+        .brand-sub { font-size: 8px; color: #8a9bb0; margin-top: 2px; }
 
         .status-dot {
             display: inline-block; width: 6px; height: 6px;
             border-radius: 50%; background: #27ae60; margin-right: 3px;
+            box-shadow: 0 0 6px #27ae60;
         }
-        .status-dot.saving { background: #f39c12; }
-        .status-dot.error { background: #e74c3c; }
+        .status-dot.saving { background: #f39c12; box-shadow: 0 0 6px #f39c12; }
+        .status-dot.error { background: #e74c3c; box-shadow: 0 0 6px #e74c3c; }
 
         .btn-reset {
-            background: #e74c3c; border: none; color: white; font-weight: 600;
-            padding: 4px 10px; border-radius: 30px; font-size: 9px; cursor: pointer;
+            background: linear-gradient(135deg, #8b2e2e 0%, #c0392b 100%);
+            border: 1px solid rgba(212,163,115,0.3);
+            color: #f0d4a8; font-weight: 600;
+            padding: 5px 12px; border-radius: 30px; font-size: 9px; cursor: pointer;
+            transition: all 0.3s;
         }
+        .btn-reset:hover { box-shadow: 0 0 12px rgba(192,57,43,0.5); }
 
         .units {
             display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 8px;
         }
         .unit-card {
-            background: white; padding: 8px 5px; border-radius: 10px; text-align: left;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02); cursor: pointer; border: 2px solid transparent;
+            background: linear-gradient(160deg, #1e2836 0%, #232f42 100%);
+            padding: 9px 5px; border-radius: 12px; text-align: left;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+            cursor: pointer; border: 1px solid rgba(212,163,115,0.15);
+            transition: all 0.3s;
         }
-        .unit-card.active { border-color: #d4a373; background: #fdfaf7; }
+        .unit-card.active { 
+            border-color: #d4a373; 
+            background: linear-gradient(160deg, #2a3547 0%, #2e3b50 100%);
+            box-shadow: 0 4px 16px rgba(212,163,115,0.25);
+        }
         .unit-card .unit-label {
-            font-size: 12px; font-weight: 700; color: #1a2634;
-            text-align: center; margin-bottom: 4px;
+            font-family: 'Playfair Display', serif;
+            font-size: 13px; font-weight: 700; color: #f0d4a8;
+            text-align: center; margin-bottom: 5px;
+            letter-spacing: 0.5px;
         }
         .unit-card .row {
             display: flex; flex-direction: column;
             font-size: 8px; margin-bottom: 2px;
         }
-        .unit-card .row .lbl { color: #8a9bb0; }
+        .unit-card .row .lbl { color: #7a8ba0; }
         .unit-card .row .val {
-            font-weight: 700; color: #1a2634;
+            font-weight: 700; color: #e8eef5;
             font-size: 9px; letter-spacing: -0.2px;
             word-break: break-all;
         }
-        .unit-card .row .val.green { color: #27ae60; }
-        .unit-card .row .val.red { color: #e74c3c; }
-        .unit-card .row .val.orange { color: #e67e22; }
+        .unit-card .row .val.green { color: #4ade80; }
+        .unit-card .row .val.red { color: #f87171; }
+        .unit-card .row .val.orange { color: #fbbf24; }
         .unit-card .row.big {
-            margin-top: 3px; padding-top: 3px;
-            border-top: 1px dashed #dce3ed;
+            margin-top: 4px; padding-top: 4px;
+            border-top: 1px solid rgba(212,163,115,0.2);
         }
         .unit-card .row.big .val { font-size: 10px; }
-        .unit-card .row.modal-row .val { font-size: 8px; color: #5e6f8d; }
+        .unit-card .row.modal-row .val { font-size: 8px; color: #d4a373; }
 
         .recap-grid {
             display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px;
         }
         .recap-item {
-            background: white; padding: 6px 8px; border-radius: 8px; cursor: pointer;
+            background: linear-gradient(160deg, #1e2836 0%, #232f42 100%);
+            padding: 7px 9px; border-radius: 10px; cursor: pointer;
+            border: 1px solid rgba(212,163,115,0.12);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
-        .recap-item .label { font-size: 8px; color: #8a9bb0; font-weight: 500; }
-        .recap-item .value { font-size: 13px; font-weight: 700; color: #1a2634; word-break: break-all; }
-        .recap-item .value.green { color: #27ae60; }
-        .recap-item .value.yellow { color: #f39c12; }
-        .recap-item .value.red { color: #e74c3c; }
+        .recap-item .label { font-size: 8px; color: #7a8ba0; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
+        .recap-item .value { font-size: 13px; font-weight: 700; color: #f0d4a8; word-break: break-all; }
+        .recap-item .value.green { color: #4ade80; }
+        .recap-item .value.yellow { color: #fbbf24; }
+        .recap-item .value.red { color: #f87171; }
         .recap-item.full { grid-column: 1 / -1; }
 
         .form-section {
-            background: white; padding: 10px; border-radius: 10px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.03); margin-bottom: 8px;
+            background: linear-gradient(160deg, #1e2836 0%, #232f42 100%);
+            padding: 11px; border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25); margin-bottom: 8px;
+            border: 1px solid rgba(212,163,115,0.12);
         }
         .form-tabs {
-            display: flex; gap: 4px; margin-bottom: 6px;
+            display: flex; gap: 4px; margin-bottom: 7px;
         }
         .form-tabs button {
-            flex: 1; padding: 4px 0; border: none; border-radius: 30px;
+            flex: 1; padding: 5px 0; border: 1px solid rgba(212,163,115,0.15); border-radius: 30px;
             font-weight: 600; font-size: 10px; cursor: pointer;
-            background: #f0f4fa; color: #5e6f8d;
+            background: rgba(255,255,255,0.03); color: #8a9bb0;
+            transition: all 0.3s;
         }
-        .form-tabs button.active { background: #1a2634; color: white; }
+        .form-tabs button.active { 
+            background: linear-gradient(135deg, #d4a373 0%, #b8895a 100%);
+            color: #1a2332; border-color: #d4a373;
+            box-shadow: 0 2px 10px rgba(212,163,115,0.35);
+        }
         .form-row {
-            display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px;
+            display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 5px;
         }
         .form-row .field {
             flex: 1; min-width: 60px;
         }
         .form-row .field label {
-            display: block; font-size: 8px; font-weight: 600; color: #5e6f8d; margin-bottom: 1px;
+            display: block; font-size: 8px; font-weight: 600; color: #8a9bb0; margin-bottom: 2px;
+            text-transform: uppercase; letter-spacing: 0.3px;
         }
         .form-row .field input,
         .form-row .field select {
-            width: 100%; padding: 5px 6px; border: 1px solid #dce3ed;
-            border-radius: 6px; font-size: 11px; background: #fafcff;
+            width: 100%; padding: 6px 7px; 
+            border: 1px solid rgba(212,163,115,0.2);
+            border-radius: 8px; font-size: 11px; 
+            background: rgba(15,20,25,0.5); color: #e8eef5;
         }
+        .form-row .field input::placeholder { color: #5a6a80; }
         .form-row .field input:focus,
         .form-row .field select:focus {
             outline: none; border-color: #d4a373;
+            box-shadow: 0 0 0 2px rgba(212,163,115,0.15);
         }
-        .nominal-wrap {
-            position: relative;
-        }
+        .nominal-wrap { position: relative; }
         .nominal-wrap .prefix {
-            position: absolute; left: 6px; top: 50%; transform: translateY(-50%);
-            font-size: 10px; color: #8a9bb0; font-weight: 600; pointer-events: none;
+            position: absolute; left: 7px; top: 50%; transform: translateY(-50%);
+            font-size: 10px; color: #d4a373; font-weight: 600; pointer-events: none;
         }
-        .nominal-wrap input { padding-left: 24px !important; }
+        .nominal-wrap input { padding-left: 26px !important; }
         .nominal-hint {
             font-size: 7px; color: #8a9bb0; margin-top: 1px; text-align: right;
         }
         .btn-add {
             width: 100%; border: none; color: white; font-weight: 700;
-            padding: 7px 0; border-radius: 30px; font-size: 12px; cursor: pointer;
+            padding: 8px 0; border-radius: 30px; font-size: 12px; cursor: pointer;
+            transition: all 0.3s; letter-spacing: 0.3px;
         }
-        .btn-add.income-btn { background: #27ae60; }
-        .btn-add.expense-btn { background: #e67e22; }
+        .btn-add.income-btn { 
+            background: linear-gradient(135deg, #1e7a4a 0%, #27ae60 100%);
+            box-shadow: 0 2px 10px rgba(39,174,96,0.3);
+        }
+        .btn-add.income-btn:hover { box-shadow: 0 4px 16px rgba(39,174,96,0.5); }
+        .btn-add.expense-btn { 
+            background: linear-gradient(135deg, #b85e1a 0%, #e67e22 100%);
+            box-shadow: 0 2px 10px rgba(230,126,34,0.3);
+        }
+        .btn-add.expense-btn:hover { box-shadow: 0 4px 16px rgba(230,126,34,0.5); }
         .cleaning-hint {
             font-size: 7px; color: #8a9bb0; text-align: right; padding: 1px 2px 0 0;
         }
         .conflict-notice {
-            background: #e74c3c22; color: #c0392b; padding: 3px 6px;
-            border-radius: 4px; font-size: 9px; margin-top: 3px; display: none;
+            background: rgba(231,76,60,0.15); color: #f87171; padding: 4px 7px;
+            border-radius: 6px; font-size: 9px; margin-top: 4px; display: none;
+            border: 1px solid rgba(231,76,60,0.3);
         }
         .conflict-notice.show { display: block; }
 
         .schedule-section {
-            background: white; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.03);
-            padding: 6px 3px; margin-bottom: 8px; overflow-x: auto;
+            background: linear-gradient(160deg, #1e2836 0%, #232f42 100%);
+            border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+            padding: 7px 4px; margin-bottom: 8px; overflow-x: auto;
+            border: 1px solid rgba(212,163,115,0.12);
         }
         .schedule-header {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 2px 4px; flex-wrap: wrap; gap: 3px;
+            padding: 0 3px 5px; flex-wrap: wrap; gap: 3px;
         }
         .schedule-title {
-            font-size: 11px; font-weight: 700; color: #1a2634;
+            font-family: 'Playfair Display', serif;
+            font-size: 12px; font-weight: 700; color: #f0d4a8;
         }
         .schedule-title small {
+            font-family: 'Inter', sans-serif;
             font-weight: 400; font-size: 9px; color: #8a9bb0;
         }
         .schedule-nav button {
-            background: #f0f4fa; border: none; border-radius: 30px;
-            padding: 2px 8px; font-size: 10px; font-weight: 600;
-            color: #5e6f8d; cursor: pointer;
+            background: rgba(212,163,115,0.1); border: 1px solid rgba(212,163,115,0.2);
+            border-radius: 30px; padding: 3px 9px; font-size: 10px; font-weight: 600;
+            color: #d4a373; cursor: pointer; transition: all 0.3s;
         }
+        .schedule-nav button:hover { background: rgba(212,163,115,0.2); }
         .schedule-table-wrap { overflow-x: auto; }
         .schedule-table {
             width: 100%; border-collapse: collapse; font-size: 8px; min-width: 1000px;
         }
         .schedule-table th {
-            background: #f0f4fa; color: #1f2a3a; font-weight: 600;
-            padding: 3px 2px; text-align: center; border: 1px solid #dce3ed; font-size: 8px;
+            background: rgba(15,20,25,0.6); color: #d4a373; font-weight: 600;
+            padding: 4px 2px; text-align: center; border: 1px solid rgba(212,163,115,0.15); font-size: 8px;
             position: sticky; top: 0; z-index: 2;
         }
         .schedule-table th .tgl {
-            font-weight: 700; font-size: 9px; color: #1a2634; display: block; line-height: 1;
+            font-weight: 700; font-size: 9px; color: #f0d4a8; display: block; line-height: 1;
         }
         .schedule-table th .hari {
-            font-weight: 400; font-size: 6px; color: #8a9bb0; display: block;
+            font-weight: 400; font-size: 6px; color: #7a8ba0; display: block;
         }
-        .schedule-table th.weekend .hari { color: #e74c3c; }
-        .schedule-table th.today-col { background: #d4a37344; }
+        .schedule-table th.weekend .hari { color: #f87171; }
+        .schedule-table th.today-col { background: rgba(212,163,115,0.25); }
         .schedule-table td {
-            padding: 3px 2px; text-align: center; border: 1px solid #dce3ed;
+            padding: 4px 2px; text-align: center; border: 1px solid rgba(212,163,115,0.1);
             font-size: 7px; min-width: 30px; cursor: pointer;
+            color: #c0cbd9;
         }
         .schedule-table .time-col {
-            font-weight: 600; color: #5e6f8d; background: #f8fafc;
+            font-weight: 600; color: #8a9bb0; background: rgba(15,20,25,0.4);
             min-width: 32px; font-size: 6px; cursor: default;
             position: sticky; left: 0; z-index: 1;
         }
         .schedule-table .booked {
-            background: #e74c3c22; color: #c0392b; font-weight: 600;
+            background: rgba(231,76,60,0.2); color: #f87171; font-weight: 600;
         }
         .schedule-table .booked .nama {
-            font-size: 6px; font-weight: 700; display: block; line-height: 1.1;
+            font-size: 6px; font-weight: 700; display: block; line-height: 1.1; color: #fca5a5;
         }
         .schedule-table .booked .harga {
-            font-size: 5px; display: block; color: #e67e22; line-height: 1.1;
+            font-size: 5px; display: block; color: #fbbf24; line-height: 1.1;
         }
         .schedule-table .available {
-            background: #27ae6022; color: #1e7a4a;
+            background: rgba(39,174,96,0.1); color: #4ade80;
         }
         .schedule-table .available .empty-text {
-            font-size: 5px; color: #8a9bb0;
+            font-size: 5px; color: #5a6a80;
         }
-        .schedule-table td.today-col { background: #fdfaf7; }
-        .schedule-table td.today-col.available { background: #27ae6033; }
+        .schedule-table td.today-col { background: rgba(212,163,115,0.08); }
+        .schedule-table td.today-col.available { background: rgba(39,174,96,0.18); }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.4); display: flex; align-items: center;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            display: flex; align-items: center;
             justify-content: center; z-index: 999; padding: 16px;
         }
         .modal-box {
-            background: white; border-radius: 14px; padding: 16px 14px;
-            max-width: 380px; width: 100%; box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            background: linear-gradient(160deg, #1e2836 0%, #232f42 100%);
+            border-radius: 16px; padding: 18px 16px;
+            max-width: 380px; width: 100%; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(212,163,115,0.15);
+            border: 1px solid rgba(212,163,115,0.25);
         }
-        .modal-box h3 { font-size: 15px; color: #1a2634; margin-bottom: 10px; }
-        .modal-box .field { margin-bottom: 8px; }
+        .modal-box h3 { 
+            font-family: 'Playfair Display', serif;
+            font-size: 16px; color: #f0d4a8; margin-bottom: 12px;
+        }
+        .modal-box .field { margin-bottom: 9px; }
         .modal-box .field label {
-            display: block; font-size: 9px; font-weight: 600; color: #5e6f8d; margin-bottom: 2px;
+            display: block; font-size: 9px; font-weight: 600; color: #8a9bb0; margin-bottom: 3px;
+            text-transform: uppercase; letter-spacing: 0.3px;
         }
         .modal-box .field input,
         .modal-box .field select {
-            width: 100%; padding: 6px 8px; border: 1px solid #dce3ed;
+            width: 100%; padding: 7px 9px; 
+            border: 1px solid rgba(212,163,115,0.2);
             border-radius: 8px; font-size: 12px;
+            background: rgba(15,20,25,0.5); color: #e8eef5;
         }
         .modal-box .field input:focus,
         .modal-box .field select:focus {
             outline: none; border-color: #d4a373;
+            box-shadow: 0 0 0 2px rgba(212,163,115,0.15);
         }
         .modal-box .detail-row {
-            display: flex; justify-content: space-between; padding: 4px 0;
-            border-bottom: 1px solid #f0f4fa; font-size: 11px;
+            display: flex; justify-content: space-between; padding: 6px 0;
+            border-bottom: 1px solid rgba(212,163,115,0.1); font-size: 11px;
         }
         .modal-box .detail-row .label { color: #8a9bb0; }
-        .modal-box .detail-row .value { font-weight: 600; color: #1a2634; }
+        .modal-box .detail-row .value { font-weight: 600; color: #f0d4a8; }
         .modal-actions {
-            display: flex; gap: 6px; margin-top: 10px;
+            display: flex; gap: 6px; margin-top: 12px;
         }
         .modal-actions button {
-            flex: 1; padding: 6px 0; border: none; border-radius: 30px;
-            font-weight: 600; font-size: 12px; cursor: pointer;
+            flex: 1; padding: 7px 0; border: none; border-radius: 30px;
+            font-weight: 600; font-size: 12px; cursor: pointer; transition: all 0.3s;
         }
-        .modal-actions .btn-save { background: #27ae60; color: white; }
-        .modal-actions .btn-cancel { background: #f0f4fa; color: #5e6f8d; }
-        .modal-actions .btn-delete { background: #e74c3c; color: white; flex: 0.4; }
+        .modal-actions .btn-save { 
+            background: linear-gradient(135deg, #1e7a4a 0%, #27ae60 100%); color: white;
+            box-shadow: 0 2px 10px rgba(39,174,96,0.3);
+        }
+        .modal-actions .btn-cancel { 
+            background: rgba(255,255,255,0.06); color: #8a9bb0;
+            border: 1px solid rgba(212,163,115,0.15);
+        }
+        .modal-actions .btn-delete { 
+            background: linear-gradient(135deg, #8b2e2e 0%, #c0392b 100%); color: white; flex: 0.4;
+            box-shadow: 0 2px 10px rgba(192,57,43,0.3);
+        }
 
         .history-section {
-            background: white; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.03);
-            padding: 6px 3px; overflow-x: auto;
+            background: linear-gradient(160deg, #1e2836 0%, #232f42 100%);
+            border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+            padding: 7px 4px; overflow-x: auto;
+            border: 1px solid rgba(212,163,115,0.12);
         }
         .history-title {
-            font-size: 11px; font-weight: 700; color: #1a2634; padding: 0 2px 4px;
+            font-family: 'Playfair Display', serif;
+            font-size: 12px; font-weight: 700; color: #f0d4a8; padding: 0 3px 5px;
         }
         .history-table {
             width: 100%; border-collapse: collapse; font-size: 8px; min-width: 420px;
         }
         .history-table th {
-            background: #f0f4fa; color: #1f2a3a; font-weight: 600;
-            padding: 4px 3px; text-align: left; border-bottom: 2px solid #dce3ed; font-size: 7px;
+            background: rgba(15,20,25,0.6); color: #d4a373; font-weight: 600;
+            padding: 5px 3px; text-align: left; border-bottom: 1px solid rgba(212,163,115,0.25); font-size: 7px;
+            text-transform: uppercase; letter-spacing: 0.3px;
         }
         .history-table td {
-            padding: 4px 3px; border-bottom: 1px solid #eaeef5; vertical-align: middle; font-size: 7px;
+            padding: 5px 3px; border-bottom: 1px solid rgba(212,163,115,0.08); 
+            vertical-align: middle; font-size: 7px; color: #c0cbd9;
         }
         .history-table .clickable { cursor: pointer; }
-        .history-table .clickable:active { background: #f0f4fa; }
+        .history-table .clickable:active { background: rgba(212,163,115,0.08); }
         .badge {
-            padding: 1px 5px; border-radius: 30px; font-size: 6px; font-weight: 600; display: inline-block;
+            padding: 2px 6px; border-radius: 30px; font-size: 6px; font-weight: 600; display: inline-block;
         }
-        .badge.income { background: #27ae6022; color: #1e7a4a; }
-        .badge.expense { background: #e67e2222; color: #b85e1a; }
-        .badge.unit { background: #d4a37322; color: #7f5a3a; }
+        .badge.income { background: rgba(39,174,96,0.2); color: #4ade80; border: 1px solid rgba(39,174,96,0.3); }
+        .badge.expense { background: rgba(230,126,34,0.2); color: #fbbf24; border: 1px solid rgba(230,126,34,0.3); }
+        .badge.unit { background: rgba(212,163,115,0.2); color: #f0d4a8; border: 1px solid rgba(212,163,115,0.3); }
         .btn-del {
-            background: transparent; border: none; color: #b0bccf; cursor: pointer; font-size: 11px;
+            background: transparent; border: none; color: #5a6a80; cursor: pointer; font-size: 11px;
+            transition: color 0.3s;
         }
+        .btn-del:hover { color: #f87171; }
         .empty-state {
-            text-align: center; color: #9aabbf; padding: 10px 0; font-size: 9px;
+            text-align: center; color: #5a6a80; padding: 12px 0; font-size: 9px;
         }
         .footer {
-            text-align: center; color: #8a9bb0; font-size: 8px; margin-top: 6px;
+            text-align: center; color: #5a6a80; font-size: 8px; margin-top: 6px;
+            letter-spacing: 0.5px;
         }
 
         .sync-info {
@@ -290,7 +376,7 @@
     </div>
 
     <div class="units">
-        <div class="unit-card" v-for="u in ['19','21','29']" :key="u"
+        <div class="unit-card" v-for="u in ['19','21','6']" :key="u"
              :class="{ active: selectedUnit === u }" @click="selectedUnit = u">
             <div class="unit-label">Unit {{ u }}</div>
             <div class="row">
@@ -321,7 +407,7 @@
         </div>
         <div class="recap-item" @click="lihatPengeluaran">
             <div class="label">Total Pengeluaran</div>
-            <div class="value" style="color:#e67e22;">{{ formatRupiah(totalPengeluaran) }}</div>
+            <div class="value" style="color:#fbbf24;">{{ formatRupiah(totalPengeluaran) }}</div>
         </div>
         <div class="recap-item">
             <div class="label">Pendapatan Bersih</div>
@@ -333,7 +419,7 @@
             <div class="label">Status Total</div>
             <div class="value" :class="statusWarna(totalKotor, 10100000)">
                 {{ formatRupiah(totalKotor) }}
-                <div style="font-size:7px;font-weight:400;color:#8a9bb0;">target 10.100.000</div>
+                <div style="font-size:7px;font-weight:400;color:#7a8ba0;">target 10.100.000</div>
             </div>
         </div>
     </div>
@@ -351,7 +437,7 @@
                     <select v-model="form.unit">
                         <option value="19">19</option>
                         <option value="21">21</option>
-                        <option value="29">29</option>
+                        <option value="6">6</option>
                     </select>
                 </div>
                 <div class="field" style="flex:2;">
@@ -395,7 +481,7 @@
                     <select v-model="form.unit">
                         <option value="19">19</option>
                         <option value="21">21</option>
-                        <option value="29">29</option>
+                        <option value="6">6</option>
                     </select>
                 </div>
                 <div class="field" style="flex:2;">
@@ -515,7 +601,7 @@
                 <select v-model="editModal.unit">
                     <option value="19">19</option>
                     <option value="21">21</option>
-                    <option value="29">29</option>
+                    <option value="6">6</option>
                 </select>
             </div>
             <div class="field">
@@ -598,7 +684,7 @@
             units: {
                 '19': { modal: 3500000, pendapatan: 0 },
                 '21': { modal: 3000000, pendapatan: 0 },
-                '29': { modal: 3600000, pendapatan: 0 }
+                '6':  { modal: 3600000, pendapatan: 0 }
             },
             transaksi: [],
             slotData: {},
@@ -653,7 +739,6 @@
             totalBersih() {
                 return this.totalKotor - this.totalPengeluaran;
             },
-            // ===== display helper untuk input auto-format =====
             'form.nominalDisplay'() {
                 return this.formatNumberInput(this.form.nominal);
             },
@@ -681,7 +766,6 @@
             }
         },
         methods: {
-            // Format angka penuh dengan titik ribuan (tanpa Rp)
             formatDetail(val) {
                 const n = Math.round(Number(val) || 0);
                 return n.toLocaleString('id-ID');
@@ -689,14 +773,12 @@
             formatRupiah(val) {
                 return 'Rp ' + Number(val || 0).toLocaleString('id-ID');
             },
-            // Format untuk nilai di dalam <input> (tanpa Rp, pakai titik)
             formatNumberInput(val) {
                 if (val === '' || val === null || val === undefined) return '';
                 const n = Math.round(Number(val) || 0);
                 if (n === 0) return '';
                 return n.toLocaleString('id-ID');
             },
-            // Handler input auto-format: buang non-digit, format ulang
             onNominalInput(e, target) {
                 const raw = e.target.value.replace(/[^\d]/g, '');
                 const num = raw === '' ? '' : parseInt(raw, 10);
@@ -705,7 +787,6 @@
                 } else if (target === 'edit') {
                     this.editModal.harga = num;
                 }
-                // Paksa tampilan mengikuti format (karena :value reaktif, Vue akan update)
                 this.$nextTick(() => {
                     if (target === 'form') {
                         e.target.value = this.formatNumberInput(this.form.nominal);
@@ -826,7 +907,7 @@
                 this.editModal.unit = t.unit;
                 this.editModal.oldUnit = t.unit;
                 this.editModal.nama = t.nama;
-                this.editModal.harga = t.nominal; // ANGKA PENUH, bukan /1000
+                this.editModal.harga = t.nominal;
                 this.editModal.durasi = t.durasi || 1;
                 this.editModal.checkin = t.checkin || '';
                 this.editModal.jenis = t.jenis;
@@ -848,7 +929,7 @@
                 this.editModal.unit = t.unit;
                 this.editModal.oldUnit = t.unit;
                 this.editModal.nama = t.nama;
-                this.editModal.harga = t.nominal; // ANGKA PENUH
+                this.editModal.harga = t.nominal;
                 this.editModal.durasi = t.durasi || 0;
                 this.editModal.checkin = t.checkin || '';
                 this.editModal.jenis = t.jenis;
@@ -871,7 +952,7 @@
 
                 const oldNominal = t.nominal;
                 const oldUnit = t.unit;
-                const newNominal = Number(this.editModal.harga) || 0; // ANGKA PENUH, tanpa *1000
+                const newNominal = Number(this.editModal.harga) || 0;
                 const newDurasi = this.editModal.durasi || 1;
                 const newCheckin = this.editModal.checkin;
                 const newNama = this.editModal.nama;
@@ -977,7 +1058,7 @@
                     return;
                 }
 
-                const nominal = Number(this.form.nominal) || 0; // ANGKA PENUH
+                const nominal = Number(this.form.nominal) || 0;
                 const unit = this.form.unit;
                 const durasi = this.form.durasi || 1;
 
@@ -1033,7 +1114,7 @@
                     return;
                 }
 
-                const nominal = Number(this.form.nominal) || 0; // ANGKA PENUH
+                const nominal = Number(this.form.nominal) || 0;
                 const unit = this.form.unit;
 
                 const entry = {
@@ -1086,7 +1167,6 @@
                 this.simpanData();
             },
 
-            // ============ CLOUD SYNC (JSONBIN) — TIDAK DIUBAH ============
             async simpanData() {
                 this.syncStatus = 'saving';
                 this.syncText = 'Menyimpan...';
@@ -1164,7 +1244,6 @@
                     } catch (e2) {}
                 }
             }
-            // ============================================================
         },
         watch: {
             'form.checkin': function() { this.cekTabrakan(); },
