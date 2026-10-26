@@ -355,15 +355,10 @@
             text-align: center; color: #5a6a80; font-size: 8px; margin-top: 6px;
             letter-spacing: 0.5px;
         }
-
-        .sync-info {
-            font-size: 7px; color: #8a9bb0; text-align: center;
-            margin-top: 4px; padding: 2px;
-        }
     </style>
 </head>
 <body>
-<div class="container" id="app">
+<div class="container" id="app" v-cloak>
     <div class="header">
         <div class="brand">
             <h1>MAYORA</h1>
@@ -1218,9 +1213,34 @@
                     if (!res.ok) throw new Error('Gagal muat');
 
                     const json = await res.json();
-                    const data = json.record;
+                    let data = json.record;
 
                     if (data) {
+                        // --- MIGRASI OTOMATIS DARI UNIT 29 KE UNIT 6 ---
+                        if (data.units && data.units['29']) {
+                            data.units['6'] = data.units['29'];
+                            delete data.units['29'];
+                        }
+                        
+                        if (data.transaksi) {
+                            data.transaksi.forEach(t => {
+                                if (t.unit === '29') t.unit = '6';
+                            });
+                        }
+
+                        if (data.slotData) {
+                            const newSlotData = {};
+                            for (let key in data.slotData) {
+                                let newKey = key;
+                                if (key.startsWith('29|')) {
+                                    newKey = key.replace('29|', '6|');
+                                }
+                                newSlotData[newKey] = data.slotData[key];
+                            }
+                            data.slotData = newSlotData;
+                        }
+                        // ----------------------------------------------
+
                         if (data.units) this.units = data.units;
                         if (data.transaksi) this.transaksi = data.transaksi;
                         if (data.slotData) this.slotData = data.slotData;
@@ -1236,7 +1256,31 @@
                     try {
                         const backup = localStorage.getItem('mayora_backup');
                         if (backup) {
-                            const data = JSON.parse(backup);
+                            let data = JSON.parse(backup);
+                            
+                            // --- MIGRASI LOKAL ---
+                            if (data.units && data.units['29']) {
+                                data.units['6'] = data.units['29'];
+                                delete data.units['29'];
+                            }
+                            if (data.transaksi) {
+                                data.transaksi.forEach(t => {
+                                    if (t.unit === '29') t.unit = '6';
+                                });
+                            }
+                            if (data.slotData) {
+                                const newSlotData = {};
+                                for (let key in data.slotData) {
+                                    let newKey = key;
+                                    if (key.startsWith('29|')) {
+                                        newKey = key.replace('29|', '6|');
+                                    }
+                                    newSlotData[newKey] = data.slotData[key];
+                                }
+                                data.slotData = newSlotData;
+                            }
+                            // ---------------------
+
                             if (data.units) this.units = data.units;
                             if (data.transaksi) this.transaksi = data.transaksi;
                             if (data.slotData) this.slotData = data.slotData;
