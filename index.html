@@ -42,7 +42,7 @@
         .recap-item .value.green { color: #4ade80; }
         .recap-item .value.red { color: #f87171; }
 
-        /* ACTION BUTTONS (Laporan & Ekspor) */
+        /* ACTION BUTTONS */
         .action-bar { display: flex; gap: 6px; margin-bottom: 8px; }
         .action-btn { flex: 1; background: rgba(212,163,115,0.1); border: 1px solid rgba(212,163,115,0.3); color: #f0d4a8; padding: 8px 0; border-radius: 8px; font-size: 10px; font-weight: 600; cursor: pointer; transition: 0.3s; }
         .action-btn:hover { background: rgba(212,163,115,0.25); }
@@ -105,16 +105,19 @@
         .badge.income { background: rgba(39,174,96,0.2); color: #4ade80; border: 1px solid rgba(39,174,96,0.3); }
         .badge.expense { background: rgba(230,126,34,0.2); color: #fbbf24; border: 1px solid rgba(230,126,34,0.3); }
         .badge.unit { background: rgba(212,163,115,0.2); color: #f0d4a8; border: 1px solid rgba(212,163,115,0.3); }
+        
+        /* CSS STATUS DP / LUNAS */
         .status-text { font-size: 7px; font-weight: 700; display: block; line-height: 1.2; }
-        .status-text.dp { color: #f87171; } 
-        .status-text.lunas { color: #4ade80; } 
+        .status-text.dp { color: #fbbf24; } /* KUNING UNTUK DP */
+        .status-text.lunas { color: #4ade80; } /* HIJAU UNTUK LUNAS */
         .sisa-text { font-size: 6px; color: #8a9bb0; display: block; margin-top: 1px; }
+
         .btn-del { background: transparent; border: none; color: #5a6a80; cursor: pointer; font-size: 11px; transition: color 0.3s; }
         .btn-del:hover { color: #f87171; }
         .empty-state { text-align: center; color: #5a6a80; padding: 12px 0; font-size: 9px; }
         .footer { text-align: center; color: #5a6a80; font-size: 8px; margin-top: 6px; letter-spacing: 0.5px; }
 
-        /* MODAL */
+        /* MODAL MEWAH (PENGGANTI ALERT) */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 999; padding: 16px; }
         .modal-box { background: linear-gradient(160deg, #1e2836 0%, #232f42 100%); border-radius: 16px; padding: 18px 16px; max-width: 380px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(212,163,115,0.15); border: 1px solid rgba(212,163,115,0.25); max-height: 90vh; overflow-y: auto; }
         .modal-box h3 { font-family: 'Playfair Display', serif; font-size: 16px; color: #f0d4a8; margin-bottom: 12px; }
@@ -129,10 +132,22 @@
         .modal-actions .btn-save { background: linear-gradient(135deg, #1e7a4a 0%, #27ae60 100%); color: white; }
         .modal-actions .btn-cancel { background: rgba(255,255,255,0.06); color: #8a9bb0; border: 1px solid rgba(212,163,115,0.15); }
         .modal-actions .btn-delete { background: linear-gradient(135deg, #8b2e2e 0%, #c0392b 100%); color: white; flex: 0.4; }
+        
+        /* CUSTOM ALERT BOX */
+        .custom-alert { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(160deg, #1e2836 0%, #232f42 100%); padding: 20px; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(212,163,115,0.2); border: 1px solid rgba(212,163,115,0.3); z-index: 1000; width: 85%; max-width: 320px; text-align: center; }
+        .custom-alert p { color: #f0d4a8; font-size: 13px; font-weight: 600; margin-bottom: 15px; line-height: 1.4; }
+        .custom-alert button { background: linear-gradient(135deg, #d4a373 0%, #b8895a 100%); border: none; color: #1a2332; padding: 8px 20px; border-radius: 30px; font-weight: 700; font-size: 12px; cursor: pointer; width: 100%; }
     </style>
 </head>
 <body>
 <div class="container" id="app">
+    
+    <!-- CUSTOM ALERT MEWAH -->
+    <div class="custom-alert" v-if="alertBox.show">
+        <p>{{ alertBox.message }}</p>
+        <button @click="alertBox.show = false">Mengerti</button>
+    </div>
+
     <div class="header">
         <div class="brand">
             <h1>MAYORA</h1>
@@ -158,7 +173,6 @@
         <div class="recap-item"><div class="label">Rata-rata / Jam</div><div class="value">{{ formatRupiah(rataRataPerJam) }}</div></div>
     </div>
 
-    <!-- TOMBOL LAPORAN & EKSPOR -->
     <div class="action-bar">
         <button class="action-btn" @click="laporanHarian">📊 Laporan Hari Ini</button>
         <button class="action-btn" @click="eksporExcel">📥 Ekspor Excel</button>
@@ -226,7 +240,7 @@
                     <tr v-for="jam in hours" :key="jam">
                         <td class="time-col">{{ jam }}</td>
                         <td v-for="day in daysInMonth" :key="day.tanggal" :class="[getSlotClass(selectedUnit, day, jam), { 'today-col': day.isToday }]" @click="openEditModal(selectedUnit, day, jam)">
-                            <span v-if="getSlotData(selectedUnit, day, jam)"><span class="nama">{{ getSlotData(selectedUnit, day, jam).nama }}</span><span class="harga">{{ formatDetail(getSlotData(selectedUnit, day, jam).harga) }}</span></span>
+                            <span v-if="getSlotData(selectedUnit, day, jam)"><span class="nama">{{ getSlotData(selectedUnit, day, jam).nama || 'Anonim' }}</span><span class="harga">{{ formatDetail(getSlotData(selectedUnit, day, jam).harga) }}</span></span>
                             <span v-else class="empty-text">—</span>
                         </td>
                     </tr>
@@ -329,6 +343,7 @@
             conflictDetected: false, syncStatus: '', syncText: 'Memuat data...',
             editModal: { show: false, index: null, unit: '19', nama: '', harga: 0, totalHarga: 0, statusBayar: 'lunas', durasi: 1, checkin: '', jenis: 'income', kegunaan: '' },
             reportModal: { show: false, masuk: 0, keluar: 0, bersih: 0 },
+            alertBox: { show: false, message: '' }, // Pengganti alert()
             sudahAlarm: {} 
         },
         computed: {
@@ -336,7 +351,6 @@
             totalPengeluaran() { return this.transaksi.filter(t => t.jenis === 'expense').reduce((a, b) => a + b.nominal, 0); },
             totalBersih() { return this.totalKotor - this.totalPengeluaran; },
             rataRataPerJam() {
-                // Ngitung total durasi jam dari semua transaksi income
                 let totalJam = 0;
                 this.transaksi.filter(t => t.jenis === 'income' && t.durasi).forEach(t => { totalJam += t.durasi; });
                 if (totalJam === 0) return 0;
@@ -360,6 +374,7 @@
             }
         },
         methods: {
+            showAlert(msg) { this.alertBox.message = msg; this.alertBox.show = true; }, // Fungsi Alert Mewah
             formatDetail(val) { return (Math.round(Number(val) || 0)).toLocaleString('id-ID'); },
             formatRupiah(val) { return 'Rp ' + Number(val || 0).toLocaleString('id-ID'); },
             formatNumberInput(val) { if (val === '' || val === null || val === undefined) return ''; const n = Math.round(Number(val) || 0); if (n === 0) return ''; return n.toLocaleString('id-ID'); },
@@ -387,16 +402,16 @@
             getSlotKey(unit, day, jam) { const dateStr = this.currentYear + '-' + String(this.currentMonth+1).padStart(2,'0') + '-' + String(day.tanggal).padStart(2,'0'); return unit + '|' + dateStr + '|' + jam; },
             getSlotData(unit, day, jam) { return this.slotData[this.getSlotKey(unit, day, jam)] || null; },
             getSlotClass(unit, day, jam) { return this.getSlotData(unit, day, jam) ? 'booked' : 'available'; },
+            
             lihatPengeluaran() {
                 const expenses = this.transaksi.filter(t => t.jenis === 'expense');
-                if (expenses.length === 0) { alert('Belum ada pengeluaran.'); return; }
+                if (expenses.length === 0) { this.showAlert('Belum ada pengeluaran.'); return; }
                 const last = expenses[expenses.length - 1];
-                alert(`Detail Pengeluaran Terakhir:\nUnit: ${last.unit}\nNama: ${last.nama}\nNominal: ${this.formatRupiah(last.nominal)}\nKegunaan: ${last.kegunaan}`);
+                this.showAlert(`Detail Pengeluaran Terakhir:\nUnit: ${last.unit}\nNama: ${last.nama}\nNominal: ${this.formatRupiah(last.nominal)}\nKegunaan: ${last.kegunaan}`);
             },
             laporanHarian() {
                 const today = new Date();
                 const tglHariIni = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
-                
                 let masuk = 0, keluar = 0;
                 this.transaksi.forEach(t => {
                     if (t.checkin && t.checkin.startsWith(tglHariIni)) {
@@ -405,42 +420,45 @@
                     }
                 });
                 this.reportModal.show = true;
-                this.reportModal.masuk = masuk;
-                this.reportModal.keluar = keluar;
-                this.reportModal.bersih = masuk - keluar;
+                this.reportModal.masuk = masuk; this.reportModal.keluar = keluar; this.reportModal.bersih = masuk - keluar;
             },
             eksporExcel() {
-                if (this.transaksi.length === 0) { alert('Belum ada data untuk diekspor.'); return; }
-                
-                // Bikin format CSV
+                if (this.transaksi.length === 0) { this.showAlert('Belum ada data untuk diekspor.'); return; }
                 let csvContent = "data:text/csv;charset=utf-8,";
                 csvContent += "Tanggal,Unit,Jenis,Nama,Nominal,Status DP/Lunas,Durasi,Kegunaan\n";
-                
                 this.transaksi.forEach(t => {
                     const status = t.jenis === 'income' ? (t.statusBayar === 'dp' ? 'DP (Sisa '+t.sisaTagihan+')' : 'Lunas') : '-';
                     csvContent += `"${t.checkin || '-'}","${t.unit}","${t.jenis}","${t.nama}","${t.nominal}","${status}","${t.durasi || 0}","${t.kegunaan || '-'}"\n`;
                 });
-
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
                 link.setAttribute("href", encodedUri);
                 link.setAttribute("download", "Laporan_Mayora_" + new Date().toISOString().slice(0,10) + ".csv");
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                document.body.appendChild(link); link.click(); document.body.removeChild(link);
             },
+
             openEditModal(unit, day, jam) {
                 const data = this.getSlotData(unit, day, jam); if (!data) return;
+                
+                // BUG FIX: Cari pakai id_transaksi yang unik, bukan nama/nominal
                 let foundIdx = -1;
-                const dateStr = this.currentYear + '-' + String(this.currentMonth+1).padStart(2,'0') + '-' + String(day.tanggal).padStart(2,'0');
-                const jamInt = parseInt(jam.split(':')[0]);
-                for (let i = 0; i < this.transaksi.length; i++) {
-                    const t = this.transaksi[i]; if (t.jenis !== 'income' || !t.checkin) continue;
-                    const checkin = new Date(t.checkin);
-                    const tgl = checkin.getFullYear() + '-' + String(checkin.getMonth()+1).padStart(2,'0') + '-' + String(checkin.getDate()).padStart(2,'0');
-                    if (tgl === dateStr && checkin.getHours() === jamInt && t.unit == unit) { foundIdx = i; break; }
+                if (data.id_transaksi) {
+                    foundIdx = this.transaksi.findIndex(t => t.id_transaksi === data.id_transaksi);
                 }
-                if (foundIdx === -1) { alert('Data tidak ditemukan.'); return; }
+                
+                // Fallback jika data lama belum punya ID
+                if (foundIdx === -1) {
+                    const dateStr = this.currentYear + '-' + String(this.currentMonth+1).padStart(2,'0') + '-' + String(day.tanggal).padStart(2,'0');
+                    const jamInt = parseInt(jam.split(':')[0]);
+                    for (let i = 0; i < this.transaksi.length; i++) {
+                        const t = this.transaksi[i]; if (t.jenis !== 'income' || !t.checkin) continue;
+                        const checkin = new Date(t.checkin);
+                        const tgl = checkin.getFullYear() + '-' + String(checkin.getMonth()+1).padStart(2,'0') + '-' + String(checkin.getDate()).padStart(2,'0');
+                        if (tgl === dateStr && checkin.getHours() === jamInt && t.unit == unit) { foundIdx = i; break; }
+                    }
+                }
+                
+                if (foundIdx === -1) { this.showAlert('Data tidak ditemukan.'); return; }
                 this.bukaEditForm(foundIdx);
             },
             openEditTransaksi(idx) { this.bukaEditForm(idx); },
@@ -488,7 +506,7 @@
                     for (let h = 0; h < t.durasi; h++) {
                         const jamSekarang = new Date(checkin); jamSekarang.setHours(checkin.getHours() + h);
                         const tgl = jamSekarang.getFullYear() + '-' + String(jamSekarang.getMonth()+1).padStart(2,'0') + '-' + String(jamSekarang.getDate()).padStart(2,'0');
-                        this.slotData[newUnit + '|' + tgl + '|' + String(jamSekarang.getHours()).padStart(2, '0') + ':00'] = { nama: t.nama, harga: t.nominal, durasi: t.durasi };
+                        this.slotData[newUnit + '|' + tgl + '|' + String(jamSekarang.getHours()).padStart(2, '0') + ':00'] = { nama: t.nama, harga: t.nominal, durasi: t.durasi, id_transaksi: t.id_transaksi };
                     }
                 }
                 this.editModal.show = false; this.simpanData();
@@ -505,40 +523,43 @@
                 this.conflictDetected = false;
             },
             tambahPemasukan() {
-                if (!this.form.nominal || this.form.nominal <= 0) { alert('Masukkan nominal!'); return; }
-                if (!this.form.nama) { alert('Masukkan nama!'); return; }
-                if (!this.form.checkin) { alert('Masukkan waktu check-in!'); return; }
-                if (this.form.statusBayar === 'dp' && (!this.form.totalHarga || this.form.totalHarga <= 0)) { alert('Masukkan Total Harga Sewa (Rp)!'); return; }
+                if (!this.form.nominal || this.form.nominal <= 0) { this.showAlert('Masukkan nominal!'); return; }
+                if (!this.form.nama) { this.showAlert('Masukkan nama!'); return; }
+                if (!this.form.checkin) { this.showAlert('Masukkan waktu check-in!'); return; }
+                if (this.form.statusBayar === 'dp' && (!this.form.totalHarga || this.form.totalHarga <= 0)) { this.showAlert('Masukkan Total Harga Sewa (Rp)!'); return; }
                 this.cekTabrakan();
-                if (this.conflictDetected) { alert('⚠️ JAM INI SUDAH TERBOOKING!'); return; }
+                if (this.conflictDetected) { this.showAlert('⚠️ JAM INI SUDAH TERBOOKING!'); return; }
 
                 const nominal = Number(this.form.nominal) || 0;
                 const totalHarga = this.form.statusBayar === 'dp' ? (Number(this.form.totalHarga) || nominal) : nominal;
                 const unit = this.form.unit, durasi = this.form.durasi || 1;
                 const checkin = new Date(this.form.checkin);
                 const checkout = new Date(checkin); checkout.setHours(checkout.getHours() + durasi);
+                const newId = 'trx_' + Date.now() + '_' + Math.floor(Math.random() * 1000); // ID Unik
 
-                const entry = { unit: unit, jenis: 'income', nominal: nominal, totalHarga: totalHarga, statusBayar: this.form.statusBayar, sisaTagihan: totalHarga - nominal, nama: this.form.nama, durasi: durasi, checkin: this.form.checkin, checkout: checkout.toISOString().slice(0, 16), kegunaan: '' };
+                const entry = { unit: unit, jenis: 'income', nominal: nominal, totalHarga: totalHarga, statusBayar: this.form.statusBayar, sisaTagihan: totalHarga - nominal, nama: this.form.nama, durasi: durasi, checkin: this.form.checkin, checkout: checkout.toISOString().slice(0, 16), kegunaan: '', id_transaksi: newId };
 
                 for (let h = 0; h < durasi; h++) {
                     const jamSekarang = new Date(checkin); jamSekarang.setHours(checkin.getHours() + h);
                     const tgl = jamSekarang.getFullYear() + '-' + String(jamSekarang.getMonth()+1).padStart(2,'0') + '-' + String(jamSekarang.getDate()).padStart(2,'0');
-                    this.slotData[unit + '|' + tgl + '|' + String(jamSekarang.getHours()).padStart(2, '0') + ':00'] = { nama: this.form.nama, harga: nominal, durasi: durasi };
+                    this.slotData[unit + '|' + tgl + '|' + String(jamSekarang.getHours()).padStart(2, '0') + ':00'] = { nama: this.form.nama, harga: nominal, durasi: durasi, id_transaksi: newId };
                 }
                 this.units[unit].pendapatan += nominal;
                 this.transaksi.push(entry); this.simpanData();
                 this.form.nominal = ''; this.form.totalHarga = ''; this.form.nama = ''; this.form.durasi = 1; this.form.checkin = ''; this.form.statusBayar = 'lunas'; this.conflictDetected = false;
             },
             tambahPengeluaran() {
-                if (!this.form.nominal || this.form.nominal <= 0) { alert('Masukkan nominal!'); return; }
-                if (!this.form.nama) { alert('Masukkan nama peminjam!'); return; }
-                if (!this.form.kegunaan) { alert('Masukkan kegunaan!'); return; }
+                if (!this.form.nominal || this.form.nominal <= 0) { this.showAlert('Masukkan nominal!'); return; }
+                if (!this.form.nama) { this.showAlert('Masukkan nama peminjam!'); return; }
+                if (!this.form.kegunaan) { this.showAlert('Masukkan kegunaan!'); return; }
                 const nominal = Number(this.form.nominal) || 0;
-                this.transaksi.push({ unit: this.form.unit, jenis: 'expense', nominal: nominal, nama: this.form.nama, durasi: 0, checkin: this.form.checkin || null, checkout: null, kegunaan: this.form.kegunaan, statusBayar: 'lunas', totalHarga: nominal, sisaTagihan: 0 });
+                const newId = 'trx_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+                this.transaksi.push({ unit: this.form.unit, jenis: 'expense', nominal: nominal, nama: this.form.nama, durasi: 0, checkin: this.form.checkin || null, checkout: null, kegunaan: this.form.kegunaan, statusBayar: 'lunas', totalHarga: nominal, sisaTagihan: 0, id_transaksi: newId });
                 this.simpanData();
                 this.form.nominal = ''; this.form.nama = ''; this.form.checkin = ''; this.form.kegunaan = '';
             },
             hapusTransaksi(idx) {
+                if (!confirm('Hapus transaksi ini?')) return;
                 const t = this.transaksi[idx]; if (!t) return;
                 if (t.jenis === 'income') {
                     this.units[t.unit].pendapatan -= t.nominal;
@@ -570,7 +591,7 @@
                             if (!this.sudahAlarm[alarmKey]) {
                                 this.sudahAlarm[alarmKey] = true;
                                 bunyiAlarm();
-                                alert(`🔔 PERINGATAN CHECK-OUT!\n\nPenyewa: ${t.nama}\nUnit: ${t.unit}\nWaktu Habis: ${this.formatDate(t.checkout)}\n\nTersisa ${Math.round(selisihMenit)} menit lagi!`);
+                                this.showAlert(`🔔 PERINGATAN CHECK-OUT!\n\nPenyewa: ${t.nama}\nUnit: ${t.unit}\nWaktu Habis: ${this.formatDate(t.checkout)}\n\nTersisa ${Math.round(selisihMenit)} menit lagi!`);
                             }
                         }
                     }
@@ -595,7 +616,12 @@
                     const json = await res.json(); let data = json.record;
                     if (data) {
                         if (data.units && data.units['29']) { data.units['6'] = data.units['29']; delete data.units['29']; }
-                        if (data.transaksi) { data.transaksi.forEach(t => { if (t.unit === '29') t.unit = '6'; }); }
+                        if (data.transaksi) { 
+                            data.transaksi.forEach(t => { 
+                                if (t.unit === '29') t.unit = '6'; 
+                                if (!t.id_transaksi) t.id_transaksi = 'old_' + Date.now() + '_' + Math.floor(Math.random()*1000); // Auto ID data lama
+                            }); 
+                        }
                         if (data.slotData) {
                             const newSlotData = {};
                             for (let key in data.slotData) { newSlotData[key.startsWith('29|') ? key.replace('29|', '6|') : key] = data.slotData[key]; }
