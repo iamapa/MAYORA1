@@ -83,11 +83,16 @@
         .schedule-table th .hari { font-weight: 400; font-size: 6px; color: #7a8ba0; display: block; }
         .schedule-table th.weekend .hari { color: #f87171; }
         .schedule-table th.today-col { background: rgba(212,163,115,0.25); }
-        .schedule-table td { padding: 4px 2px; text-align: center; border: 1px solid rgba(212,163,115,0.1); font-size: 7px; min-width: 30px; cursor: pointer; color: #c0cbd9; }
+        .schedule-table td { padding: 4px 2px; text-align: center; border: 1px solid rgba(212,163,115,0.1); font-size: 7px; min-width: 35px; cursor: pointer; color: #c0cbd9; }
         .schedule-table .time-col { font-weight: 600; color: #8a9bb0; background: rgba(15,20,25,0.4); min-width: 32px; font-size: 6px; cursor: default; position: sticky; left: 0; z-index: 1; }
-        .schedule-table .booked { background: rgba(231,76,60,0.2); color: #f87171; font-weight: 600; }
-        .schedule-table .booked .nama { font-size: 6px; font-weight: 700; display: block; line-height: 1.1; color: #fca5a5; }
-        .schedule-table .booked .harga { font-size: 5px; display: block; color: #fbbf24; line-height: 1.1; }
+        
+        /* DESAIN KOTAK TERISI */
+        .schedule-table .booked { background: rgba(212,163,115,0.15); border: 1px solid rgba(212,163,115,0.3); font-weight: 600; text-align: center; vertical-align: middle; }
+        .schedule-table .booked .nama { font-size: 6px; font-weight: 700; display: block; line-height: 1.1; color: #f0d4a8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .schedule-table .booked .harga { font-size: 5px; display: block; color: #4ade80; line-height: 1.1; margin-bottom: 2px; }
+        .schedule-table .booked .status-dp { font-size: 5px; font-weight: 700; color: #fbbf24; display: block; background: rgba(251,191,36,0.2); border-radius: 2px; padding: 1px; margin: 0 auto; width: fit-content; }
+        .schedule-table .booked .status-lunas { font-size: 5px; font-weight: 700; color: #4ade80; display: block; background: rgba(74,222,128,0.2); border-radius: 2px; padding: 1px; margin: 0 auto; width: fit-content; }
+        
         .schedule-table .available { background: rgba(39,174,96,0.1); color: #4ade80; }
         .schedule-table .available .empty-text { font-size: 5px; color: #5a6a80; }
         .schedule-table td.today-col { background: rgba(212,163,115,0.08); }
@@ -106,7 +111,6 @@
         .badge.expense { background: rgba(230,126,34,0.2); color: #fbbf24; border: 1px solid rgba(230,126,34,0.3); }
         .badge.unit { background: rgba(212,163,115,0.2); color: #f0d4a8; border: 1px solid rgba(212,163,115,0.3); }
         
-        /* CSS STATUS DP / LUNAS */
         .status-text { font-size: 7px; font-weight: 700; display: block; line-height: 1.2; }
         .status-text.dp { color: #fbbf24; } /* KUNING UNTUK DP */
         .status-text.lunas { color: #4ade80; } /* HIJAU UNTUK LUNAS */
@@ -117,7 +121,7 @@
         .empty-state { text-align: center; color: #5a6a80; padding: 12px 0; font-size: 9px; }
         .footer { text-align: center; color: #5a6a80; font-size: 8px; margin-top: 6px; letter-spacing: 0.5px; }
 
-        /* MODAL MEWAH (PENGGANTI ALERT) */
+        /* MODAL MEWAH */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 999; padding: 16px; }
         .modal-box { background: linear-gradient(160deg, #1e2836 0%, #232f42 100%); border-radius: 16px; padding: 18px 16px; max-width: 380px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(212,163,115,0.15); border: 1px solid rgba(212,163,115,0.25); max-height: 90vh; overflow-y: auto; }
         .modal-box h3 { font-family: 'Playfair Display', serif; font-size: 16px; color: #f0d4a8; margin-bottom: 12px; }
@@ -142,7 +146,6 @@
 <body>
 <div class="container" id="app">
     
-    <!-- CUSTOM ALERT MEWAH -->
     <div class="custom-alert" v-if="alertBox.show">
         <p>{{ alertBox.message }}</p>
         <button @click="alertBox.show = false">Mengerti</button>
@@ -240,7 +243,13 @@
                     <tr v-for="jam in hours" :key="jam">
                         <td class="time-col">{{ jam }}</td>
                         <td v-for="day in daysInMonth" :key="day.tanggal" :class="[getSlotClass(selectedUnit, day, jam), { 'today-col': day.isToday }]" @click="openEditModal(selectedUnit, day, jam)">
-                            <span v-if="getSlotData(selectedUnit, day, jam)"><span class="nama">{{ getSlotData(selectedUnit, day, jam).nama || 'Anonim' }}</span><span class="harga">{{ formatDetail(getSlotData(selectedUnit, day, jam).harga) }}</span></span>
+                            <!-- BAGIAN INFO JADWAL DENGAN STATUS DP / LUNAS -->
+                            <span v-if="getSlotData(selectedUnit, day, jam)" style="display:block;">
+                                <span class="nama">{{ getSlotData(selectedUnit, day, jam).nama || 'Anonim' }}</span>
+                                <span class="harga">{{ formatDetail(getSlotData(selectedUnit, day, jam).harga) }}</span>
+                                <span v-if="getSlotData(selectedUnit, day, jam).statusBayar === 'dp'" class="status-dp">DP</span>
+                                <span v-else class="status-lunas">LUNAS</span>
+                            </span>
                             <span v-else class="empty-text">—</span>
                         </td>
                     </tr>
@@ -343,7 +352,7 @@
             conflictDetected: false, syncStatus: '', syncText: 'Memuat data...',
             editModal: { show: false, index: null, unit: '19', nama: '', harga: 0, totalHarga: 0, statusBayar: 'lunas', durasi: 1, checkin: '', jenis: 'income', kegunaan: '' },
             reportModal: { show: false, masuk: 0, keluar: 0, bersih: 0 },
-            alertBox: { show: false, message: '' }, // Pengganti alert()
+            alertBox: { show: false, message: '' },
             sudahAlarm: {} 
         },
         computed: {
@@ -374,7 +383,7 @@
             }
         },
         methods: {
-            showAlert(msg) { this.alertBox.message = msg; this.alertBox.show = true; }, // Fungsi Alert Mewah
+            showAlert(msg) { this.alertBox.message = msg; this.alertBox.show = true; },
             formatDetail(val) { return (Math.round(Number(val) || 0)).toLocaleString('id-ID'); },
             formatRupiah(val) { return 'Rp ' + Number(val || 0).toLocaleString('id-ID'); },
             formatNumberInput(val) { if (val === '' || val === null || val === undefined) return ''; const n = Math.round(Number(val) || 0); if (n === 0) return ''; return n.toLocaleString('id-ID'); },
@@ -424,11 +433,13 @@
             },
             eksporExcel() {
                 if (this.transaksi.length === 0) { this.showAlert('Belum ada data untuk diekspor.'); return; }
-                let csvContent = "data:text/csv;charset=utf-8,";
-                csvContent += "Tanggal,Unit,Jenis,Nama,Nominal,Status DP/Lunas,Durasi,Kegunaan\n";
+                let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // Tambah BOM biar Excel baca UTF-8 dengan benar
+                // Pake titik koma (;) karena standar Excel Indonesia
+                csvContent += "Tanggal;Unit;Jenis;Nama;Nominal;Status;Sisa Tagihan;Durasi;Kegunaan\n";
                 this.transaksi.forEach(t => {
-                    const status = t.jenis === 'income' ? (t.statusBayar === 'dp' ? 'DP (Sisa '+t.sisaTagihan+')' : 'Lunas') : '-';
-                    csvContent += `"${t.checkin || '-'}","${t.unit}","${t.jenis}","${t.nama}","${t.nominal}","${status}","${t.durasi || 0}","${t.kegunaan || '-'}"\n`;
+                    const status = t.jenis === 'income' ? (t.statusBayar === 'dp' ? 'DP' : 'Lunas') : '-';
+                    const sisa = t.jenis === 'income' ? (t.statusBayar === 'dp' ? t.sisaTagihan : 0) : 0;
+                    csvContent += `"${t.checkin || '-'}";"${t.unit}";"${t.jenis}";"${t.nama}";"${t.nominal}";"${status}";"${sisa}";"${t.durasi || 0}";"${t.kegunaan || '-'}"\n`;
                 });
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
@@ -440,13 +451,11 @@
             openEditModal(unit, day, jam) {
                 const data = this.getSlotData(unit, day, jam); if (!data) return;
                 
-                // BUG FIX: Cari pakai id_transaksi yang unik, bukan nama/nominal
                 let foundIdx = -1;
                 if (data.id_transaksi) {
                     foundIdx = this.transaksi.findIndex(t => t.id_transaksi === data.id_transaksi);
                 }
                 
-                // Fallback jika data lama belum punya ID
                 if (foundIdx === -1) {
                     const dateStr = this.currentYear + '-' + String(this.currentMonth+1).padStart(2,'0') + '-' + String(day.tanggal).padStart(2,'0');
                     const jamInt = parseInt(jam.split(':')[0]);
@@ -458,7 +467,11 @@
                     }
                 }
                 
-                if (foundIdx === -1) { this.showAlert('Data tidak ditemukan.'); return; }
+                // JIKA MASIH TIDAK KETEMU, PAKSA BIKIN BARU (Agar tidak stuck)
+                if (foundIdx === -1) { 
+                    this.showAlert('Data ini terdeteksi sebagai data lama. Silakan isi ulang data di form.'); 
+                    return; 
+                }
                 this.bukaEditForm(foundIdx);
             },
             openEditTransaksi(idx) { this.bukaEditForm(idx); },
@@ -506,7 +519,7 @@
                     for (let h = 0; h < t.durasi; h++) {
                         const jamSekarang = new Date(checkin); jamSekarang.setHours(checkin.getHours() + h);
                         const tgl = jamSekarang.getFullYear() + '-' + String(jamSekarang.getMonth()+1).padStart(2,'0') + '-' + String(jamSekarang.getDate()).padStart(2,'0');
-                        this.slotData[newUnit + '|' + tgl + '|' + String(jamSekarang.getHours()).padStart(2, '0') + ':00'] = { nama: t.nama, harga: t.nominal, durasi: t.durasi, id_transaksi: t.id_transaksi };
+                        this.slotData[newUnit + '|' + tgl + '|' + String(jamSekarang.getHours()).padStart(2, '0') + ':00'] = { nama: t.nama, harga: t.nominal, durasi: t.durasi, id_transaksi: t.id_transaksi, statusBayar: t.statusBayar };
                     }
                 }
                 this.editModal.show = false; this.simpanData();
@@ -535,14 +548,14 @@
                 const unit = this.form.unit, durasi = this.form.durasi || 1;
                 const checkin = new Date(this.form.checkin);
                 const checkout = new Date(checkin); checkout.setHours(checkout.getHours() + durasi);
-                const newId = 'trx_' + Date.now() + '_' + Math.floor(Math.random() * 1000); // ID Unik
+                const newId = 'trx_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
 
                 const entry = { unit: unit, jenis: 'income', nominal: nominal, totalHarga: totalHarga, statusBayar: this.form.statusBayar, sisaTagihan: totalHarga - nominal, nama: this.form.nama, durasi: durasi, checkin: this.form.checkin, checkout: checkout.toISOString().slice(0, 16), kegunaan: '', id_transaksi: newId };
 
                 for (let h = 0; h < durasi; h++) {
                     const jamSekarang = new Date(checkin); jamSekarang.setHours(checkin.getHours() + h);
                     const tgl = jamSekarang.getFullYear() + '-' + String(jamSekarang.getMonth()+1).padStart(2,'0') + '-' + String(jamSekarang.getDate()).padStart(2,'0');
-                    this.slotData[unit + '|' + tgl + '|' + String(jamSekarang.getHours()).padStart(2, '0') + ':00'] = { nama: this.form.nama, harga: nominal, durasi: durasi, id_transaksi: newId };
+                    this.slotData[unit + '|' + tgl + '|' + String(jamSekarang.getHours()).padStart(2, '0') + ':00'] = { nama: this.form.nama, harga: nominal, durasi: durasi, id_transaksi: newId, statusBayar: this.form.statusBayar };
                 }
                 this.units[unit].pendapatan += nominal;
                 this.transaksi.push(entry); this.simpanData();
@@ -616,15 +629,23 @@
                     const json = await res.json(); let data = json.record;
                     if (data) {
                         if (data.units && data.units['29']) { data.units['6'] = data.units['29']; delete data.units['29']; }
+                        
+                        // AUTO-HEAL: Kasih ID ke data lama yang belum punya ID
                         if (data.transaksi) { 
                             data.transaksi.forEach(t => { 
                                 if (t.unit === '29') t.unit = '6'; 
-                                if (!t.id_transaksi) t.id_transaksi = 'old_' + Date.now() + '_' + Math.floor(Math.random()*1000); // Auto ID data lama
+                                if (!t.id_transaksi) t.id_transaksi = 'old_' + Date.now() + '_' + Math.floor(Math.random()*10000); 
                             }); 
                         }
+                        
                         if (data.slotData) {
                             const newSlotData = {};
-                            for (let key in data.slotData) { newSlotData[key.startsWith('29|') ? key.replace('29|', '6|') : key] = data.slotData[key]; }
+                            for (let key in data.slotData) { 
+                                let slot = data.slotData[key];
+                                if (!slot.statusBayar) slot.statusBayar = 'lunas'; // Data lama dianggap lunas
+                                let newKey = key.startsWith('29|') ? key.replace('29|', '6|') : key;
+                                newSlotData[newKey] = slot; 
+                            }
                             data.slotData = newSlotData;
                         }
                         if (data.units) this.units = data.units;
