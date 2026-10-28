@@ -119,8 +119,6 @@
         .history-table .clickable { cursor: pointer; }
         .history-table .clickable:active { background: rgba(212,163,115,0.08); }
         .badge { padding: 2px 6px; border-radius: 30px; font-size: 6px; font-weight: 600; display: inline-block; }
-        .badge.income { background: rgba(39,174,96,0.2); color: #4ade80; border: 1px solid rgba(39,174,96,0.3); }
-        .badge.expense { background: rgba(230,126,34,0.2); color: #fbbf24; border: 1px solid rgba(230,126,34,0.3); }
         .badge.unit { background: rgba(212,163,115,0.2); color: #f0d4a8; border: 1px solid rgba(212,163,115,0.3); }
         
         .status-text { font-size: 7px; font-weight: 700; display: block; line-height: 1.2; }
@@ -128,7 +126,6 @@
         .status-text.lunas { color: #4ade80; }
         .sisa-text { font-size: 6px; color: #8a9bb0; display: block; margin-top: 1px; }
         
-        /* WARNING OVERDUE (TELAT BAYAR) */
         .overdue-text { font-size: 6px; color: #f87171; font-weight: 700; display: block; animation: blink 1s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
@@ -213,7 +210,6 @@
             </div>
             <div class="form-row">
                 <div class="field" style="flex:2;"><label>Status Pembayaran</label><select v-model="form.statusBayar"><option value="lunas">Lunas (Penuh)</option><option value="dp">DP (Uang Muka)</option></select></div>
-                <!-- INPUT DP DIBEBASKAN BISA 0 -->
                 <div class="field" v-if="form.statusBayar === 'dp'" style="flex:2;">
                     <label>Nominal DP (Rp)</label>
                     <div class="nominal-wrap"><span class="prefix">Rp</span><input :value="form.nominalDisplay" @input="onNominalInput($event, 'form')" type="text" inputmode="numeric" placeholder="0" /></div>
@@ -636,14 +632,11 @@
             
             // === ALARM SUDAH 100% FIX PAKAI LOCAL TIME ===
             cekAlarmCheckout() {
-                const now = new Date(); // Waktu lokal HP sekarang
+                const now = new Date(); 
                 this.transaksi.forEach((t, index) => {
                     if (t.jenis === 'income' && t.checkout) {
-                        // Karena t.checkout sekarang disimpan dalam format lokal, 
-                        // kita tinggal bikin objek Date dari string tersebut.
                         const checkoutTime = new Date(t.checkout);
                         
-                        // Hitung selisih waktu
                         const selisihMs = checkoutTime.getTime() - now.getTime();
                         const selisihMenit = selisihMs / (1000 * 60);
                         
