@@ -207,15 +207,19 @@
             <div class="form-row">
                 <div class="field"><label>Unit</label><select v-model="form.unit"><option value="19">19</option><option value="21">21</option><option value="6">6</option></select></div>
                 <div class="field" style="flex:2;">
-                    <label>Nominal Dibayar (Rp)</label>
-                    <div class="nominal-wrap"><span class="prefix">Rp</span><input :value="form.nominalDisplay" @input="onNominalInput($event, 'form')" type="text" inputmode="numeric" placeholder="350.000" /></div>
+                    <label>Total Harga Sewa (Rp)</label>
+                    <div class="nominal-wrap"><span class="prefix">Rp</span><input :value="form.totalHargaDisplay" @input="onNominalInput($event, 'total')" type="text" inputmode="numeric" placeholder="Contoh: 300.000" /></div>
                 </div>
             </div>
             <div class="form-row">
                 <div class="field" style="flex:2;"><label>Status Pembayaran</label><select v-model="form.statusBayar"><option value="lunas">Lunas (Penuh)</option><option value="dp">DP (Uang Muka)</option></select></div>
+                <!-- LOGIKA BARU: Input Nominal DP Baru Muncul Kalo Pilih DP -->
                 <div class="field" v-if="form.statusBayar === 'dp'" style="flex:2;">
-                    <label>Total Harga Sewa (Rp)</label>
-                    <div class="nominal-wrap"><span class="prefix">Rp</span><input :value="form.totalHargaDisplay" @input="onNominalInput($event, 'total')" type="text" inputmode="numeric" placeholder="Total" /></div>
+                    <label>Nominal DP (Rp)</label>
+                    <div class="nominal-wrap"><span class="prefix">Rp</span><input :value="form.nominalDisplay" @input="onNominalInput($event, 'form')" type="text" inputmode="numeric" placeholder="Berapa DP-nya?" /></div>
+                    <div class="nominal-hint" style="color:#fbbf24; font-weight:600;" v-if="form.totalHarga > 0 && form.nominal > 0">
+                        Sisa: {{ formatRupiah(form.totalHarga - form.nominal) }}
+                    </div>
                 </div>
             </div>
             <div class="form-row">
@@ -259,7 +263,7 @@
                     <tr v-for="jam in hours" :key="jam">
                         <td class="time-col">{{ jam }}</td>
                         <td v-for="day in daysInMonth" :key="day.tanggal" :class="[getSlotClass(selectedUnit, day, jam), { 'today-col': day.isToday }]" @click="openEditModal(selectedUnit, day, jam)">
-                            <span v-if="getSlotData(selectedUnit, day, jam)" style="display:block;">
+                    <span v-if="getSlotData(selectedUnit, day, jam)" style="display:block;">
                                 <span class="nama">{{ getSlotData(selectedUnit, day, jam).nama || 'Anonim' }}</span>
                                 <span class="harga">{{ formatDetail(getSlotData(selectedUnit, day, jam).harga) }}</span>
                                 <span v-if="getSlotData(selectedUnit, day, jam).statusBayar === 'dp'" class="status-dp-box">
@@ -316,10 +320,10 @@
             <h3>✏️ Edit Transaksi</h3>
             <div class="field"><label>Unit</label><select v-model="editModal.unit"><option value="19">19</option><option value="21">21</option><option value="6">6</option></select></div>
             <div class="field"><label>Nama</label><input v-model="editModal.nama" /></div>
-            <div class="field"><label>Nominal Dibayar (Rp)</label><div class="nominal-wrap"><span class="prefix">Rp</span><input :value="editModal.hargaDisplay" @input="onNominalInput($event, 'edit')" type="text" inputmode="numeric" /></div></div>
+            <div class="field"><label>Total Harga Sewa (Rp)</label><div class="nominal-wrap"><span class="prefix">Rp</span><input :value="editModal.totalHargaDisplay" @input="onNominalInput($event, 'editTotal')" type="text" inputmode="numeric" /></div></div>
             <div v-if="editModal.jenis === 'income'">
                 <div class="field"><label>Status Pembayaran</label><select v-model="editModal.statusBayar"><option value="lunas">Lunas</option><option value="dp">DP (Belum Lunas)</option></select></div>
-                <div class="field" v-if="editModal.statusBayar === 'dp'"><label>Total Harga Sewa (Rp)</label><div class="nominal-wrap"><span class="prefix">Rp</span><input :value="editModal.totalHargaDisplay" @input="onNominalInput($event, 'editTotal')" type="text" inputmode="numeric" /></div></div>
+                <div class="field" v-if="editModal.statusBayar === 'dp'"><label>Nominal Dibayar / DP (Rp)</label><div class="nominal-wrap"><span class="prefix">Rp</span><input :value="editModal.hargaDisplay" @input="onNominalInput($event, 'edit')" type="text" inputmode="numeric" /></div></div>
             </div>
             <div class="field" v-if="editModal.jenis !== 'expense'"><label>Durasi (jam)</label><input v-model.number="editModal.durasi" type="number" /></div>
             <div class="field"><label>Tanggal</label><input v-model="editModal.checkin" type="datetime-local" /></div>
@@ -388,7 +392,6 @@
                 if (totalJam === 0) return 0;
                 return Math.round(this.totalKotor / totalJam);
             },
-            // FITUR BARU: Filter Pencarian
             filteredTransaksi() {
                 if (!this.searchQuery) return this.transaksi;
                 const q = this.searchQuery.toLowerCase();
@@ -441,12 +444,11 @@
             getSlotData(unit, day, jam) { return this.slotData[this.getSlotKey(unit, day, jam)] || null; },
             getSlotClass(unit, day, jam) { return this.getSlotData(unit, day, jam) ? 'booked' : 'available'; },
             
-            // FITUR BARU: Deteksi Overdue
             isOverdue(checkout) {
                 if (!checkout) return false;
                 const now = new Date();
                 const co = new Date(checkout);
-                return co < now; // Jika waktu checkout udah lewat dari sekarang
+                return co < now; 
             },
             getOriginalIndex(filteredItem) {
                 return this.transaksi.findIndex(t => t.id_transaksi === filteredItem.id_transaksi || (t.checkin === filteredItem.checkin && t.nama === filteredItem.nama && t.nominal === filteredItem.nominal));
@@ -571,15 +573,15 @@
                 this.conflictDetected = false;
             },
             tambahPemasukan() {
-                if (!this.form.nominal || this.form.nominal <= 0) { this.showAlert('Masukkan nominal!'); return; }
+                if (!this.form.totalHarga || this.form.totalHarga <= 0) { this.showAlert('Masukkan Total Harga Sewa!'); return; }
+                if (this.form.statusBayar === 'dp' && (!this.form.nominal || this.form.nominal <= 0)) { this.showAlert('Masukkan Nominal DP!'); return; }
                 if (!this.form.nama) { this.showAlert('Masukkan nama!'); return; }
                 if (!this.form.checkin) { this.showAlert('Masukkan waktu check-in!'); return; }
-                if (this.form.statusBayar === 'dp' && (!this.form.totalHarga || this.form.totalHarga <= 0)) { this.showAlert('Masukkan Total Harga Sewa (Rp)!'); return; }
                 this.cekTabrakan();
                 if (this.conflictDetected) { this.showAlert('⚠️ JAM INI SUDAH TERBOOKING!'); return; }
 
-                const nominal = Number(this.form.nominal) || 0;
-                const totalHarga = this.form.statusBayar === 'dp' ? (Number(this.form.totalHarga) || nominal) : nominal;
+                const totalHarga = Number(this.form.totalHarga) || 0;
+                const nominal = this.form.statusBayar === 'dp' ? (Number(this.form.nominal) || 0) : totalHarga;
                 const unit = this.form.unit, durasi = this.form.durasi || 1;
                 const checkin = new Date(this.form.checkin);
                 const checkout = new Date(checkin); checkout.setHours(checkout.getHours() + durasi);
@@ -593,7 +595,7 @@
                     const tgl = jamSekarang.getFullYear() + '-' + String(jamSekarang.getMonth()+1).padStart(2,'0') + '-' + String(jamSekarang.getDate()).padStart(2,'0');
                     this.slotData[unit + '|' + tgl + '|' + String(jamSekarang.getHours()).padStart(2, '0') + ':00'] = { nama: this.form.nama, harga: nominal, durasi: durasi, id_transaksi: newId, statusBayar: this.form.statusBayar, sisaTagihan: sisa };
                 }
-                this.units[unit].pendapatan += nominal;
+                this.units[unit].pendapatan += nominal; // Pendapatan nambah sesuai yang dibayar aja
                 this.transaksi.push(entry); this.simpanData();
                 this.form.nominal = ''; this.form.totalHarga = ''; this.form.nama = ''; this.form.durasi = 1; this.form.checkin = ''; this.form.statusBayar = 'lunas'; this.conflictDetected = false;
             },
@@ -635,6 +637,7 @@
                     if (t.jenis === 'income' && t.checkout) {
                         const checkoutTime = new Date(t.checkout);
                         const selisihMenit = (checkoutTime - now) / 60000;
+                        // LOGIKA BARU: ALARM CUMA BUNYI PAS 60 MENIT SEBELUM CHECKOUT
                         if (selisihMenit > 0 && selisihMenit <= 60) {
                             const alarmKey = 'alarm_' + index + '_' + t.checkout;
                             if (!this.sudahAlarm[alarmKey]) {
