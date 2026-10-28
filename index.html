@@ -213,12 +213,12 @@
             </div>
             <div class="form-row">
                 <div class="field" style="flex:2;"><label>Status Pembayaran</label><select v-model="form.statusBayar"><option value="lunas">Lunas (Penuh)</option><option value="dp">DP (Uang Muka)</option></select></div>
-                <!-- LOGIKA BARU: Input Nominal DP Baru Muncul Kalo Pilih DP -->
+                <!-- INPUT DP DIBEBASKAN BISA 0 -->
                 <div class="field" v-if="form.statusBayar === 'dp'" style="flex:2;">
                     <label>Nominal DP (Rp)</label>
-                    <div class="nominal-wrap"><span class="prefix">Rp</span><input :value="form.nominalDisplay" @input="onNominalInput($event, 'form')" type="text" inputmode="numeric" placeholder="Berapa DP-nya?" /></div>
-                    <div class="nominal-hint" style="color:#fbbf24; font-weight:600;" v-if="form.totalHarga > 0 && form.nominal > 0">
-                        Sisa: {{ formatRupiah(form.totalHarga - form.nominal) }}
+                    <div class="nominal-wrap"><span class="prefix">Rp</span><input :value="form.nominalDisplay" @input="onNominalInput($event, 'form')" type="text" inputmode="numeric" placeholder="0" /></div>
+                    <div class="nominal-hint" style="color:#fbbf24; font-weight:600;" v-if="form.totalHarga > 0 && form.nominal >= 0">
+                        Sisa: {{ formatRupiah(form.totalHarga - (form.nominal || 0)) }}
                     </div>
                 </div>
             </div>
@@ -263,7 +263,7 @@
                     <tr v-for="jam in hours" :key="jam">
                         <td class="time-col">{{ jam }}</td>
                         <td v-for="day in daysInMonth" :key="day.tanggal" :class="[getSlotClass(selectedUnit, day, jam), { 'today-col': day.isToday }]" @click="openEditModal(selectedUnit, day, jam)">
-                    <span v-if="getSlotData(selectedUnit, day, jam)" style="display:block;">
+                            <span v-if="getSlotData(selectedUnit, day, jam)" style="display:block;">
                                 <span class="nama">{{ getSlotData(selectedUnit, day, jam).nama || 'Anonim' }}</span>
                                 <span class="harga">{{ formatDetail(getSlotData(selectedUnit, day, jam).harga) }}</span>
                                 <span v-if="getSlotData(selectedUnit, day, jam).statusBayar === 'dp'" class="status-dp-box">
@@ -297,7 +297,6 @@
                                 <span v-if="t.statusBayar === 'dp'" class="status-text dp">DP</span>
                                 <span v-else class="status-text lunas">LUNAS</span>
                                 <span v-if="t.statusBayar === 'dp'" class="sisa-text">Sisa: {{ formatRupiah(t.sisaTagihan) }}</span>
-                                <!-- FITUR BARU: WARNING OVERDUE -->
                                 <span v-if="t.statusBayar === 'dp' && isOverdue(t.checkout)" class="overdue-text">⚠️ TELAT BAYAR</span>
                             </span>
                             <span v-else style="font-size:6px;color:#8a9bb0;">-</span>
@@ -418,7 +417,7 @@
             showAlert(msg) { this.alertBox.message = msg; this.alertBox.show = true; },
             formatDetail(val) { return (Math.round(Number(val) || 0)).toLocaleString('id-ID'); },
             formatRupiah(val) { return 'Rp ' + Number(val || 0).toLocaleString('id-ID'); },
-            formatNumberInput(val) { if (val === '' || val === null || val === undefined) return ''; const n = Math.round(Number(val) || 0); if (n === 0) return ''; return n.toLocaleString('id-ID'); },
+            formatNumberInput(val) { if (val === '' || val === null || val === undefined) return ''; const n = Math.round(Number(val) || 0); if (n === 0) return '0'; return n.toLocaleString('id-ID'); },
             onNominalInput(e, target) {
                 const raw = e.target.value.replace(/[^\d]/g, '');
                 const num = raw === '' ? '' : parseInt(raw, 10);
@@ -574,7 +573,8 @@
             },
             tambahPemasukan() {
                 if (!this.form.totalHarga || this.form.totalHarga <= 0) { this.showAlert('Masukkan Total Harga Sewa!'); return; }
-                if (this.form.statusBayar === 'dp' && (!this.form.nominal || this.form.nominal <= 0)) { this.showAlert('Masukkan Nominal DP!'); return; }
+                // VALIDASI DIBUANG: Nominal DP boleh 0
+                if (this.form.statusBayar === 'dp' && (this.form.nominal === '' || this.form.nominal === null)) { this.showAlert('Masukkan Nominal DP (boleh isi 0)!'); return; }
                 if (!this.form.nama) { this.showAlert('Masukkan nama!'); return; }
                 if (!this.form.checkin) { this.showAlert('Masukkan waktu check-in!'); return; }
                 this.cekTabrakan();
@@ -595,7 +595,7 @@
                     const tgl = jamSekarang.getFullYear() + '-' + String(jamSekarang.getMonth()+1).padStart(2,'0') + '-' + String(jamSekarang.getDate()).padStart(2,'0');
                     this.slotData[unit + '|' + tgl + '|' + String(jamSekarang.getHours()).padStart(2, '0') + ':00'] = { nama: this.form.nama, harga: nominal, durasi: durasi, id_transaksi: newId, statusBayar: this.form.statusBayar, sisaTagihan: sisa };
                 }
-                this.units[unit].pendapatan += nominal; // Pendapatan nambah sesuai yang dibayar aja
+                this.units[unit].pendapatan += nominal; 
                 this.transaksi.push(entry); this.simpanData();
                 this.form.nominal = ''; this.form.totalHarga = ''; this.form.nama = ''; this.form.durasi = 1; this.form.checkin = ''; this.form.statusBayar = 'lunas'; this.conflictDetected = false;
             },
@@ -631,13 +631,20 @@
                 for (let key in this.units) this.units[key].pendapatan = 0;
                 this.transaksi = []; this.slotData = {}; this.simpanData();
             },
+            
+            // === LOGIKA ALARM YANG UDAH DIBENERIN TOTAL (ANTI-NGACO) ===
             cekAlarmCheckout() {
                 const now = new Date();
                 this.transaksi.forEach((t, index) => {
                     if (t.jenis === 'income' && t.checkout) {
+                        // Ubah string checkout ke objek Date secara akurat
                         const checkoutTime = new Date(t.checkout);
-                        const selisihMenit = (checkoutTime - now) / 60000;
-                        // LOGIKA BARU: ALARM CUMA BUNYI PAS 60 MENIT SEBELUM CHECKOUT
+                        
+                        // Hitung selisih waktu dalam MILIDETIK, lalu ubah ke MENIT
+                        const selisihMs = checkoutTime.getTime() - now.getTime();
+                        const selisihMenit = selisihMs / (1000 * 60);
+                        
+                        // Alarm bunyi PAS di rentang 60 menit (1 jam) SEBELUM checkout, dan belum lewat
                         if (selisihMenit > 0 && selisihMenit <= 60) {
                             const alarmKey = 'alarm_' + index + '_' + t.checkout;
                             if (!this.sudahAlarm[alarmKey]) {
@@ -649,6 +656,7 @@
                     }
                 });
             },
+            
             async simpanData() {
                 this.syncStatus = 'saving'; this.syncText = 'Menyimpan...';
                 const payload = { units: this.units, transaksi: this.transaksi, slotData: this.slotData };
