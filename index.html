@@ -6,9 +6,16 @@
     <title>MAYORA - Manajemen Apartemen</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+        
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; }
-        body { background-color: #0f1419; background-image: radial-gradient(circle at 50% 0%, #1a2332 0%, #0f1419 70%); background-attachment: fixed; padding: 6px; min-height: 100vh; }
+        body { 
+            background-color: #0f1419;
+            background-image: radial-gradient(circle at 50% 0%, #1a2332 0%, #0f1419 70%);
+            background-attachment: fixed; padding: 6px; min-height: 100vh; 
+        }
         .container { max-width: 480px; margin: 0 auto; }
+
+        /* HEADER & NAV */
         .header { background: linear-gradient(135deg, rgba(26,35,50,0.9) 0%, rgba(35,47,66,0.9) 100%); backdrop-filter: blur(10px); padding: 10px 14px; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(212,163,115,0.2); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(212,163,115,0.3); }
         .brand h1 { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 800; background: linear-gradient(135deg, #d4a373 0%, #f0d4a8 50%, #d4a373 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 1px; }
         .brand-sub { font-size: 8px; color: #8a9bb0; margin-top: 2px; }
@@ -16,6 +23,9 @@
         .status-dot.saving { background: #f39c12; box-shadow: 0 0 6px #f39c12; }
         .status-dot.error { background: #e74c3c; box-shadow: 0 0 6px #e74c3c; }
         .btn-reset { background: linear-gradient(135deg, #8b2e2e 0%, #c0392b 100%); border: 1px solid rgba(212,163,115,0.3); color: #f0d4a8; font-weight: 600; padding: 5px 12px; border-radius: 30px; font-size: 9px; cursor: pointer; transition: all 0.3s; }
+        .btn-reset:hover { box-shadow: 0 0 12px rgba(192,57,43,0.5); }
+
+        /* UNIT CARDS */
         .units { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 8px; }
         .unit-card { background: linear-gradient(160deg, rgba(30,40,54,0.9) 0%, rgba(35,47,66,0.9) 100%); backdrop-filter: blur(5px); padding: 9px 5px; border-radius: 12px; text-align: left; box-shadow: 0 2px 10px rgba(0,0,0,0.3); cursor: pointer; border: 1px solid rgba(212,163,115,0.15); transition: all 0.3s; }
         .unit-card.active { border-color: #d4a373; background: linear-gradient(160deg, rgba(42,53,71,0.95) 0%, rgba(46,59,80,0.95) 100%); box-shadow: 0 4px 16px rgba(212,163,115,0.25); transform: translateY(-2px); }
@@ -28,14 +38,21 @@
         .unit-card .row .val.orange { color: #fbbf24; }
         .unit-card .row.big { margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(212,163,115,0.2); }
         .unit-card .row.big .val { font-size: 10px; }
+
+        /* RECAP GRID */
         .recap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px; }
         .recap-item { background: linear-gradient(160deg, rgba(30,40,54,0.9) 0%, rgba(35,47,66,0.9) 100%); padding: 7px 9px; border-radius: 10px; cursor: pointer; border: 1px solid rgba(212,163,115,0.12); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
         .recap-item .label { font-size: 8px; color: #7a8ba0; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
         .recap-item .value { font-size: 13px; font-weight: 700; color: #f0d4a8; word-break: break-all; }
         .recap-item .value.green { color: #4ade80; }
         .recap-item .value.red { color: #f87171; }
+
+        /* ACTION BUTTONS */
         .action-bar { display: flex; gap: 6px; margin-bottom: 8px; }
         .action-btn { flex: 1; background: rgba(212,163,115,0.1); border: 1px solid rgba(212,163,115,0.3); color: #f0d4a8; padding: 8px 0; border-radius: 8px; font-size: 10px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .action-btn:hover { background: rgba(212,163,115,0.25); }
+
+        /* FORM SECTION */
         .form-section { background: linear-gradient(160deg, rgba(30,40,54,0.9) 0%, rgba(35,47,66,0.9) 100%); padding: 11px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.25); margin-bottom: 8px; border: 1px solid rgba(212,163,115,0.15); }
         .form-tabs { display: flex; gap: 4px; margin-bottom: 7px; }
         .form-tabs button { flex: 1; padding: 5px 0; border: 1px solid rgba(212,163,115,0.15); border-radius: 30px; font-weight: 600; font-size: 10px; cursor: pointer; background: rgba(255,255,255,0.03); color: #8a9bb0; transition: all 0.3s; }
@@ -56,11 +73,14 @@
         .cleaning-hint { font-size: 7px; color: #8a9bb0; text-align: right; padding: 1px 2px 0 0; }
         .conflict-notice { background: rgba(231,76,60,0.15); color: #f87171; padding: 4px 7px; border-radius: 6px; font-size: 9px; margin-top: 4px; display: none; border: 1px solid rgba(231,76,60,0.3); }
         .conflict-notice.show { display: block; }
+
+        /* JADWAL */
         .schedule-section { background: linear-gradient(160deg, rgba(30,40,54,0.9) 0%, rgba(35,47,66,0.9) 100%); border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.25); padding: 7px 4px; margin-bottom: 8px; overflow-x: auto; border: 1px solid rgba(212,163,115,0.15); }
         .schedule-header { display: flex; justify-content: space-between; align-items: center; padding: 0 3px 5px; flex-wrap: wrap; gap: 3px; }
         .schedule-title { font-family: 'Playfair Display', serif; font-size: 12px; font-weight: 700; color: #f0d4a8; }
         .schedule-title small { font-family: 'Inter', sans-serif; font-weight: 400; font-size: 9px; color: #8a9bb0; }
         .schedule-nav button { background: rgba(212,163,115,0.1); border: 1px solid rgba(212,163,115,0.2); border-radius: 30px; padding: 3px 9px; font-size: 10px; font-weight: 600; color: #d4a373; cursor: pointer; transition: all 0.3s; }
+        .schedule-nav button:hover { background: rgba(212,163,115,0.2); }
         .schedule-table-wrap { overflow-x: auto; }
         .schedule-table { width: 100%; border-collapse: collapse; font-size: 8px; min-width: 1000px; }
         .schedule-table th { background: rgba(15,20,25,0.8); color: #d4a373; font-weight: 600; padding: 4px 2px; text-align: center; border: 1px solid rgba(212,163,115,0.15); font-size: 8px; position: sticky; top: 0; z-index: 2; }
@@ -70,37 +90,54 @@
         .schedule-table th.today-col { background: rgba(212,163,115,0.35); }
         .schedule-table td { padding: 4px 2px; text-align: center; border: 1px solid rgba(212,163,115,0.1); font-size: 7px; min-width: 35px; cursor: pointer; color: #c0cbd9; }
         .schedule-table .time-col { font-weight: 600; color: #8a9bb0; background: rgba(15,20,25,0.5); min-width: 32px; font-size: 6px; cursor: default; position: sticky; left: 0; z-index: 1; }
+        
+        /* DESAIN KOTAK TERISI */
         .schedule-table .booked { background: rgba(212,163,115,0.15); border: 1px solid rgba(212,163,115,0.3); font-weight: 600; text-align: center; vertical-align: middle; }
         .schedule-table .booked .nama { font-size: 6px; font-weight: 700; display: block; line-height: 1.1; color: #f0d4a8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .schedule-table .booked .harga { font-size: 5px; display: block; color: #4ade80; line-height: 1.1; margin-bottom: 1px; }
+        
+        /* BADGE STATUS DI KOTAK JADWAL */
         .schedule-table .booked .status-lunas-box { font-size: 5px; font-weight: 700; color: #4ade80; display: block; background: rgba(74,222,128,0.2); border-radius: 2px; padding: 1px; margin: 0 auto; width: fit-content; }
         .schedule-table .booked .status-dp-box { font-size: 5px; font-weight: 700; color: #fbbf24; display: block; background: rgba(251,191,36,0.2); border-radius: 2px; padding: 1px; margin: 0 auto; width: fit-content; line-height: 1.1; }
+        
         .schedule-table .available { background: rgba(39,174,96,0.1); color: #4ade80; }
         .schedule-table .available .empty-text { font-size: 5px; color: #5a6a80; }
         .schedule-table td.today-col { background: rgba(212,163,115,0.08); }
         .schedule-table td.today-col.available { background: rgba(39,174,96,0.18); }
+
+        /* RIWAYAT */
         .history-section { background: linear-gradient(160deg, rgba(30,40,54,0.9) 0%, rgba(35,47,66,0.9) 100%); border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.25); padding: 7px 4px; overflow-x: auto; border: 1px solid rgba(212,163,115,0.15); }
         .history-header { display: flex; justify-content: space-between; align-items: center; padding: 0 3px 5px; }
         .history-title { font-family: 'Playfair Display', serif; font-size: 12px; font-weight: 700; color: #f0d4a8; }
         .search-box { background: rgba(15,20,25,0.6); border: 1px solid rgba(212,163,115,0.2); border-radius: 20px; padding: 3px 8px; font-size: 8px; color: #e8eef5; outline: none; width: 100px; transition: 0.3s; }
         .search-box:focus { width: 130px; border-color: #d4a373; }
         .search-box::placeholder { color: #5a6a80; }
+
         .history-table { width: 100%; border-collapse: collapse; font-size: 8px; min-width: 450px; }
         .history-table th { background: rgba(15,20,25,0.7); color: #d4a373; font-weight: 600; padding: 5px 3px; text-align: left; border-bottom: 1px solid rgba(212,163,115,0.25); font-size: 7px; text-transform: uppercase; letter-spacing: 0.3px; }
         .history-table td { padding: 5px 3px; border-bottom: 1px solid rgba(212,163,115,0.08); vertical-align: middle; font-size: 7px; color: #c0cbd9; }
         .history-table .clickable { cursor: pointer; }
+        .history-table .clickable:active { background: rgba(212,163,115,0.08); }
         .badge { padding: 2px 6px; border-radius: 30px; font-size: 6px; font-weight: 600; display: inline-block; }
+        .badge.income { background: rgba(39,174,96,0.2); color: #4ade80; border: 1px solid rgba(39,174,96,0.3); }
+        .badge.expense { background: rgba(230,126,34,0.2); color: #fbbf24; border: 1px solid rgba(230,126,34,0.3); }
         .badge.unit { background: rgba(212,163,115,0.2); color: #f0d4a8; border: 1px solid rgba(212,163,115,0.3); }
+        
         .status-text { font-size: 7px; font-weight: 700; display: block; line-height: 1.2; }
         .status-text.dp { color: #fbbf24; }
         .status-text.lunas { color: #4ade80; }
         .sisa-text { font-size: 6px; color: #8a9bb0; display: block; margin-top: 1px; }
+        
+        /* WARNING OVERDUE (TELAT BAYAR) */
         .overdue-text { font-size: 6px; color: #f87171; font-weight: 700; display: block; animation: blink 1s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
         .btn-del { background: transparent; border: none; color: #5a6a80; cursor: pointer; font-size: 11px; transition: color 0.3s; }
         .btn-del:hover { color: #f87171; }
         .empty-state { text-align: center; color: #5a6a80; padding: 12px 0; font-size: 9px; }
         .footer { text-align: center; color: #5a6a80; font-size: 8px; margin-top: 6px; letter-spacing: 0.5px; }
+
+        /* MODAL MEWAH */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 999; padding: 16px; }
         .modal-box { background: linear-gradient(160deg, rgba(30,40,54,0.95) 0%, rgba(35,47,66,0.95) 100%); border-radius: 16px; padding: 18px 16px; max-width: 380px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(212,163,115,0.2); border: 1px solid rgba(212,163,115,0.35); max-height: 90vh; overflow-y: auto; }
         .modal-box h3 { font-family: 'Playfair Display', serif; font-size: 16px; color: #f0d4a8; margin-bottom: 12px; }
@@ -115,6 +152,8 @@
         .modal-actions .btn-save { background: linear-gradient(135deg, #1e7a4a 0%, #27ae60 100%); color: white; }
         .modal-actions .btn-cancel { background: rgba(255,255,255,0.06); color: #8a9bb0; border: 1px solid rgba(212,163,115,0.15); }
         .modal-actions .btn-delete { background: linear-gradient(135deg, #8b2e2e 0%, #c0392b 100%); color: white; flex: 0.4; }
+        
+        /* CUSTOM ALERT BOX */
         .custom-alert { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(160deg, rgba(30,40,54,0.95) 0%, rgba(35,47,66,0.95) 100%); padding: 20px; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(212,163,115,0.2); border: 1px solid rgba(212,163,115,0.35); z-index: 1000; width: 85%; max-width: 320px; text-align: center; backdrop-filter: blur(10px); }
         .custom-alert p { color: #f0d4a8; font-size: 13px; font-weight: 600; margin-bottom: 15px; line-height: 1.4; white-space: pre-line; }
         .custom-alert button { background: linear-gradient(135deg, #d4a373 0%, #b8895a 100%); border: none; color: #1a2332; padding: 8px 20px; border-radius: 30px; font-weight: 700; font-size: 12px; cursor: pointer; width: 100%; }
@@ -122,6 +161,7 @@
 </head>
 <body>
 <div class="container" id="app">
+    
     <div class="custom-alert" v-if="alertBox.show">
         <p>{{ alertBox.message }}</p>
         <button @click="alertBox.show = false">Mengerti</button>
@@ -173,6 +213,7 @@
             </div>
             <div class="form-row">
                 <div class="field" style="flex:2;"><label>Status Pembayaran</label><select v-model="form.statusBayar"><option value="lunas">Lunas (Penuh)</option><option value="dp">DP (Uang Muka)</option></select></div>
+                <!-- INPUT DP DIBEBASKAN BISA 0 -->
                 <div class="field" v-if="form.statusBayar === 'dp'" style="flex:2;">
                     <label>Nominal DP (Rp)</label>
                     <div class="nominal-wrap"><span class="prefix">Rp</span><input :value="form.nominalDisplay" @input="onNominalInput($event, 'form')" type="text" inputmode="numeric" placeholder="0" /></div>
@@ -272,6 +313,7 @@
 
     <div class="footer">MAYORA · cloud sync aktif</div>
 
+    <!-- EDIT MODAL -->
     <div class="modal-overlay" v-if="editModal.show">
         <div class="modal-box">
             <h3>✏️ Edit Transaksi</h3>
@@ -289,6 +331,7 @@
         </div>
     </div>
 
+    <!-- MODAL LAPORAN HARIAN -->
     <div class="modal-overlay" v-if="reportModal.show">
         <div class="modal-box">
             <h3>📊 Laporan Hari Ini ({{ formatDate(new Date()) }})</h3>
@@ -301,6 +344,7 @@
             <div class="modal-actions"><button class="btn-cancel" @click="reportModal.show = false">Tutup</button></div>
         </div>
     </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
@@ -542,8 +586,11 @@
                 const checkout = new Date(checkin); checkout.setHours(checkout.getHours() + durasi);
                 const newId = 'trx_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
                 const sisa = totalHarga - nominal;
+                
+                // SIMPAN PAKAI LOCAL TIME BIAR GAK UTC
+                const checkoutStr = new Date(checkin.getTime() - (checkin.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
 
-                const entry = { unit: unit, jenis: 'income', nominal: nominal, totalHarga: totalHarga, statusBayar: this.form.statusBayar, sisaTagihan: sisa, nama: this.form.nama, durasi: durasi, checkin: this.form.checkin, checkout: checkout.toISOString().slice(0, 16), kegunaan: '', id_transaksi: newId };
+                const entry = { unit: unit, jenis: 'income', nominal: nominal, totalHarga: totalHarga, statusBayar: this.form.statusBayar, sisaTagihan: sisa, nama: this.form.nama, durasi: durasi, checkin: this.form.checkin, checkout: checkoutStr, kegunaan: '', id_transaksi: newId };
 
                 for (let h = 0; h < durasi; h++) {
                     const jamSekarang = new Date(checkin); jamSekarang.setHours(checkin.getHours() + h);
@@ -587,16 +634,20 @@
                 this.transaksi = []; this.slotData = {}; this.simpanData();
             },
             
-            // === ALARM SUDAH DI-FIX TOTAL: LOGIKA BENAR & FUNGSI DIPANGGIL ===
+            // === ALARM SUDAH 100% FIX PAKAI LOCAL TIME ===
             cekAlarmCheckout() {
-                const now = new Date();
+                const now = new Date(); // Waktu lokal HP sekarang
                 this.transaksi.forEach((t, index) => {
                     if (t.jenis === 'income' && t.checkout) {
+                        // Karena t.checkout sekarang disimpan dalam format lokal, 
+                        // kita tinggal bikin objek Date dari string tersebut.
                         const checkoutTime = new Date(t.checkout);
+                        
+                        // Hitung selisih waktu
                         const selisihMs = checkoutTime.getTime() - now.getTime();
                         const selisihMenit = selisihMs / (1000 * 60);
                         
-                        // Alarm bunyi PAS 60 menit sebelum checkout, dan belum lewat.
+                        // Alarm bunyi PAS 60 menit sebelum checkout, dan belum lewat
                         if (selisihMenit > 0 && selisihMenit <= 60) {
                             const alarmKey = 'alarm_' + index + '_' + t.checkout;
                             if (!this.sudahAlarm[alarmKey]) {
@@ -676,7 +727,6 @@
         watch: { 'form.checkin': function() { this.cekTabrakan(); }, 'form.durasi': function() { this.cekTabrakan(); }, 'form.unit': function() { this.cekTabrakan(); } },
         mounted() {
             this.muatData();
-            // FUNGSI INI SEKARANG DIPANGGIL DENGAN BENAR SETIAP 30 DETIK
             setInterval(this.cekAlarmCheckout, 30000); 
             const now = new Date();
             this.form.checkin = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + 'T' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
