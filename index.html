@@ -6,13 +6,8 @@
     <title>MAYORA - Manajemen Apartemen</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
-        
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; }
-        body { 
-            background-color: #0f1419;
-            background-image: radial-gradient(circle at 50% 0%, #1a2332 0%, #0f1419 70%);
-            background-attachment: fixed; padding: 6px; min-height: 100vh; 
-        }
+        body { background-color: #0f1419; background-image: radial-gradient(circle at 50% 0%, #1a2332 0%, #0f1419 70%); background-attachment: fixed; padding: 6px; min-height: 100vh; }
         .container { max-width: 480px; margin: 0 auto; }
 
         /* HEADER & NAV */
@@ -210,6 +205,7 @@
             </div>
             <div class="form-row">
                 <div class="field" style="flex:2;"><label>Status Pembayaran</label><select v-model="form.statusBayar"><option value="lunas">Lunas (Penuh)</option><option value="dp">DP (Uang Muka)</option></select></div>
+                <!-- INPUT DP DIBEBASKAN BISA 0 -->
                 <div class="field" v-if="form.statusBayar === 'dp'" style="flex:2;">
                     <label>Nominal DP (Rp)</label>
                     <div class="nominal-wrap"><span class="prefix">Rp</span><input :value="form.nominalDisplay" @input="onNominalInput($event, 'form')" type="text" inputmode="numeric" placeholder="0" /></div>
@@ -523,6 +519,7 @@
                 const newUnit = this.editModal.unit;
                 
                 t.statusBayar = this.editModal.statusBayar;
+                // FIX LOGIKA: Jika Lunas, totalHarga = nominal. Jika DP, pakai totalHarga input.
                 t.totalHarga = this.editModal.statusBayar === 'dp' ? (Number(this.editModal.totalHarga) || newNominal) : newNominal;
                 t.sisaTagihan = t.totalHarga - newNominal;
 
@@ -540,8 +537,8 @@
                 t.checkin = this.editModal.checkin; t.kegunaan = this.editModal.kegunaan;
 
                 if (t.checkin && t.jenis === 'income') {
-                    const checkoutDate = new Date(t.checkin); checkoutDate.setHours(checkoutDate.getHours() + t.durasi);
-                    t.checkout = checkoutDate.toISOString().slice(0, 16);
+                    const checkinDate = new Date(t.checkin); checkinDate.setHours(checkinDate.getHours() + t.durasi);
+                    t.checkout = new Date(checkinDate.getTime() - (checkinDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
                 } else if (t.jenis === 'expense') { t.checkout = null; }
 
                 if (t.jenis === 'income') { this.units[oldUnit].pendapatan -= oldNominal; this.units[newUnit].pendapatan += newNominal; }
@@ -640,7 +637,6 @@
                         const selisihMs = checkoutTime.getTime() - now.getTime();
                         const selisihMenit = selisihMs / (1000 * 60);
                         
-                        // Alarm bunyi PAS 60 menit sebelum checkout, dan belum lewat
                         if (selisihMenit > 0 && selisihMenit <= 60) {
                             const alarmKey = 'alarm_' + index + '_' + t.checkout;
                             if (!this.sudahAlarm[alarmKey]) {
