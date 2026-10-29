@@ -515,13 +515,26 @@
                 const idx = this.editModal.index; if (idx === null) return;
                 const t = this.transaksi[idx]; if (!t) return;
                 const oldNominal = t.nominal, oldUnit = t.unit;
-                const newNominal = Number(this.editModal.harga) || 0;
+                
+                // LOGIKA BARU YANG BENER:
+                let finalNominal = 0;
+                let finalTotalHarga = Number(this.editModal.totalHarga) || 0;
+
+                if (this.editModal.statusBayar === 'lunas') {
+                    // Kalo lunas, nominal yg dibayar = total harga
+                    if (finalTotalHarga <= 0) finalTotalHarga = Number(this.editModal.harga) || 0; // jaga-jaga
+                    finalNominal = finalTotalHarga;
+                } else {
+                    // Kalo DP, nominal yg dibayar = inputan DP
+                    finalNominal = Number(this.editModal.harga) || 0;
+                }
+                
                 const newUnit = this.editModal.unit;
                 
                 t.statusBayar = this.editModal.statusBayar;
-                // FIX LOGIKA: Jika Lunas, totalHarga = nominal. Jika DP, pakai totalHarga input.
-                t.totalHarga = this.editModal.statusBayar === 'dp' ? (Number(this.editModal.totalHarga) || newNominal) : newNominal;
-                t.sisaTagihan = t.totalHarga - newNominal;
+                t.totalHarga = finalTotalHarga;
+                t.nominal = finalNominal;
+                t.sisaTagihan = t.totalHarga - t.nominal;
 
                 if (t.jenis === 'income' && t.checkin) {
                     const oldCheckin = new Date(t.checkin);
@@ -532,7 +545,7 @@
                     }
                 }
 
-                t.unit = newUnit; t.nama = this.editModal.nama; t.nominal = newNominal;
+                t.unit = newUnit; t.nama = this.editModal.nama; 
                 t.durasi = (t.jenis === 'expense') ? 0 : (this.editModal.durasi || 1);
                 t.checkin = this.editModal.checkin; t.kegunaan = this.editModal.kegunaan;
 
@@ -541,7 +554,7 @@
                     t.checkout = new Date(checkinDate.getTime() - (checkinDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
                 } else if (t.jenis === 'expense') { t.checkout = null; }
 
-                if (t.jenis === 'income') { this.units[oldUnit].pendapatan -= oldNominal; this.units[newUnit].pendapatan += newNominal; }
+                if (t.jenis === 'income') { this.units[oldUnit].pendapatan -= oldNominal; this.units[newUnit].pendapatan += finalNominal; }
 
                 if (t.jenis === 'income' && t.checkin) {
                     const checkin = new Date(t.checkin);
